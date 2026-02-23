@@ -10,6 +10,11 @@ class AuthProvider with ChangeNotifier {
   UserEntity? get user => _authRepository.currentUser;
   bool get isAuthenticated => _authRepository.isAuthenticated;
 
+  Future<void> restoreSession() async {
+    await _authRepository.restoreSession();
+    notifyListeners();
+  }
+
   Future<bool> login(String emailOrPhone, String password) async {
     final ok = await _authRepository.login(emailOrPhone, password);
     if (ok) notifyListeners();

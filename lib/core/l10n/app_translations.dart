@@ -6,6 +6,16 @@ enum AppLanguage { en, fr, ar }
 
 extension AppLanguageExt on AppLanguage {
   String get code => name;
+  String get displayName {
+    switch (this) {
+      case AppLanguage.en:
+        return 'English';
+      case AppLanguage.fr:
+        return 'Français';
+      case AppLanguage.ar:
+        return 'العربية';
+    }
+  }
 }
 
 final Map<AppLanguage, Map<String, dynamic>> _all = {

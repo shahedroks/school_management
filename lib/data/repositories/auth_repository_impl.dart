@@ -16,6 +16,36 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   bool get isAuthenticated => _currentUser != null;
 
+  @override
+  Future<void> restoreSession() async {
+    final id = _prefs.getString(AppConstants.sessionUserIdKey);
+    if (id == null) return;
+    if (id == _demoStudent.id) {
+      _currentUser = _demoStudent;
+      return;
+    }
+    if (id == _demoTeacher.id) {
+      _currentUser = _demoTeacher;
+      return;
+    }
+    final raw = _prefs.getString(AppConstants.registeredUsersKey);
+    final list = raw != null ? (jsonDecode(raw) as List).cast<Map<String, dynamic>>() : <Map<String, dynamic>>[];
+    for (final u in list) {
+      if (u['id'] == id) {
+        if (u['role'] == 'teacher' && u['status'] == 'pending') return;
+        _currentUser = UserEntity(
+          id: u['id'] as String,
+          name: u['name'] as String,
+          email: u['email'] as String? ?? '${u['phone']}@school.mr',
+          role: u['role'] == 'teacher' ? UserRole.teacher : UserRole.student,
+          grade: u['grade'] as String?,
+          subject: u['subject'] as String?,
+        );
+        return;
+      }
+    }
+  }
+
   static const _demoStudent = UserEntity(
     id: 'demo_student',
     name: 'Fatima Al-Hassan',
@@ -35,10 +65,12 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<bool> login(String emailOrPhone, String password) async {
     if ((emailOrPhone == AppConstants.demoStudentPhone && password == AppConstants.demoStudentPin)) {
       _currentUser = _demoStudent;
+      await _prefs.setString(AppConstants.sessionUserIdKey, _demoStudent.id);
       return true;
     }
     if ((emailOrPhone == AppConstants.demoTeacherPhone && password == AppConstants.demoTeacherPin)) {
       _currentUser = _demoTeacher;
+      await _prefs.setString(AppConstants.sessionUserIdKey, _demoTeacher.id);
       return true;
     }
     final raw = _prefs.getString(AppConstants.registeredUsersKey);
@@ -54,6 +86,7 @@ class AuthRepositoryImpl implements AuthRepository {
           grade: u['grade'] as String?,
           subject: u['subject'] as String?,
         );
+        await _prefs.setString(AppConstants.sessionUserIdKey, _currentUser!.id);
         return true;
       }
     }
@@ -63,6 +96,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     _currentUser = null;
+    await _prefs.remove(AppConstants.sessionUserIdKey);
   }
 
   @override

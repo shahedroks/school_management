@@ -42,6 +42,8 @@ void main() async {
 
   // Providers
   final authProvider = AuthProvider(authRepo);
+  await authProvider.restoreSession();
+
   final languageProvider = LanguageProvider(prefs);
   final subscriptionProvider = SubscriptionProvider(subscriptionRepo);
 

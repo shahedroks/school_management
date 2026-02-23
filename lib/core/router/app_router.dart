@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:high_school/core/constants/app_constants.dart';
+import 'package:high_school/domain/entities/user_entity.dart';
 import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/screens/auth/language_selection_screen.dart';
 import 'package:high_school/presentation/screens/auth/login_screen.dart';
@@ -52,13 +53,13 @@ class AppRouter {
         if (languageSelected && !isAuthenticated && !isLogin && !isRegister &&
             !loc.startsWith('/sitemap')) return '/login';
         if (isAuthenticated && (isLogin || isRegister || isLanguage)) {
-          if (user?.role == 'student') return '/student/dashboard';
-          if (user?.role == 'teacher') return '/teacher/dashboard';
+          if (user?.role == UserRole.student) return '/student/dashboard';
+          if (user?.role == UserRole.teacher) return '/teacher/dashboard';
           return '/login';
         }
         if (isAuthenticated && user != null) {
-          if (loc.startsWith('/student/') && user.role != 'student') return '/teacher/dashboard';
-          if (loc.startsWith('/teacher/') && user.role != 'teacher') return '/student/dashboard';
+          if (loc.startsWith('/student/') && user.role != UserRole.student) return '/teacher/dashboard';
+          if (loc.startsWith('/teacher/') && user.role != UserRole.teacher) return '/student/dashboard';
         }
         return null;
       },
