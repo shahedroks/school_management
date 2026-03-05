@@ -15,6 +15,7 @@ import 'package:high_school/presentation/screens/student/assignments_list_screen
 import 'package:high_school/presentation/screens/student/assignment_details_screen.dart';
 import 'package:high_school/presentation/screens/student/timetable_screen.dart';
 import 'package:high_school/presentation/screens/student/live_sessions_screen.dart';
+import 'package:high_school/presentation/screens/student/live_session_detail_screen.dart';
 import 'package:high_school/presentation/screens/student/student_profile_screen.dart';
 import 'package:high_school/presentation/screens/student/subscription_screen.dart';
 import 'package:high_school/presentation/screens/teacher/teacher_dashboard_screen.dart';
@@ -113,6 +114,12 @@ class AppRouter {
         GoRoute(
           path: '/student/live-sessions',
           builder: (_, __) => const LayoutWidget(child: LiveSessionsScreen()),
+        ),
+        GoRoute(
+          path: '/student/live-sessions/:sessionId',
+          builder: (_, state) => LayoutWidget(
+            child: LiveSessionDetailScreen(sessionId: state.pathParameters['sessionId']!),
+          ),
         ),
         GoRoute(
           path: '/student/profile',

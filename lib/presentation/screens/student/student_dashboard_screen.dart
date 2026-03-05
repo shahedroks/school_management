@@ -103,14 +103,14 @@ class StudentDashboardScreen extends StatelessWidget {
               crossAxisCount: 2,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.85,
+              mainAxisSpacing: 0,
+              crossAxisSpacing: 0,
+              childAspectRatio: 1.5,
               children: [
-                _StatCard(title: lang.t('classes.enrolledClasses'), value: enrolledClasses.length, icon: Icons.menu_book, iconColor: AppTheme.primary),
-                _StatCard(title: lang.t('assignments.pending'), value: pending, icon: Icons.assignment, iconColor: const Color(0xFFE65100)),
-                _StatCard(title: lang.t('lessons.completed'), value: graded, icon: Icons.check_circle, iconColor: AppTheme.accent),
-                _StatCard(title: lang.t('live.liveSessions'), value: activeSessions.length, icon: Icons.video_call, iconColor: AppTheme.primary),
+                _StatCard(title: lang.t('classes.enrolledClasses'), value: enrolledClasses.length, icon: Icons.menu_book, iconBgColor: const Color(0xFFE0E7FA), iconColor: const Color(0xFF3F51B5)),
+                _StatCard(title: lang.t('assignments.pending'), value: pending, icon: Icons.assignment, iconBgColor: const Color(0xFFFFFBE6), iconColor: const Color(0xFFFFC107)),
+                _StatCard(title: lang.t('lessons.completed'), value: graded, icon: Icons.check_circle, iconBgColor: const Color(0xFFE8F5E9), iconColor: const Color(0xFF4CAF50)),
+                _StatCard(title: lang.t('live.liveSessions'), value: activeSessions.length, icon: Icons.video_call, iconBgColor: const Color(0xFFE0E7FA), iconColor: const Color(0xFF3F51B5)),
               ],
             ),
             // Active Live Sessions – white card, time • Zoom/Meet, green Join button with icon
@@ -377,51 +377,52 @@ class _StatCard extends StatelessWidget {
   final String title;
   final int value;
   final IconData icon;
+  final Color iconBgColor;
   final Color iconColor;
 
   const _StatCard({
     required this.title,
     required this.icon,
     required this.value,
-    this.iconColor = AppTheme.primary,
+    required this.iconBgColor,
+    required this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 1,
-      shadowColor: Colors.black26,
+      shadowColor: Colors.black.withValues(alpha: 0.06),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2), width: 2),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.15),
+                color: iconBgColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: iconColor, size: 20),
+              child: Icon(icon, color: iconColor, size: 22),
             ),
             const SizedBox(height: 8),
             Text(
               '$value',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1A1A1A),
+                    color: const Color(0xFF3F51B5),
                   ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               title,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 12,
                 height: 1.2,
                 color: Colors.grey.shade600,
               ),

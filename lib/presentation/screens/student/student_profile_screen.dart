@@ -53,9 +53,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         final enrolledClasses = classes.where((c) => enrolledIds.contains(c.id)).toList();
         final completedCount = assignments.where((a) => a.status == AssignmentStatus.graded || a.status == AssignmentStatus.submitted).length;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
             _buildHeader(lang),
             const SizedBox(height: 16),
             _buildProfileCard(context, user, lang),
@@ -65,10 +65,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             _buildParentCard(context, lang),
             const SizedBox(height: 16),
             _buildCurrentClassesCard(context, lang, enrolledClasses),
-            const SizedBox(height: 16),
-            Text(lang.t('profile.languagePreference'), style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            const LanguageSelectorWidget(),
+        const SizedBox(height: 16),
+        Text(lang.t('profile.languagePreference'), style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        const LanguageSelectorWidget(),
             const SizedBox(height: 16),
             _buildAchievementsCard(context, lang),
             const SizedBox(height: 24),
