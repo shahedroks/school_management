@@ -41,11 +41,13 @@ class ClassesListScreen extends StatelessWidget {
         final hasSubscription = subscription.subscription != null;
         final isEmpty = !hasSubscription || enrolledClasses.isEmpty;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header banner – dark blue, notably rounded corners, subtle bottom shadow
-            Container(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header banner – dark blue, notably rounded corners, subtle bottom shadow
+              Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               decoration: BoxDecoration(
@@ -96,6 +98,7 @@ class ClassesListScreen extends StatelessWidget {
                   )),
             const SizedBox(height: 24),
           ],
+          ),
         );
       },
     );

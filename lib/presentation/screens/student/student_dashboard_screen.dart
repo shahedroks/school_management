@@ -46,11 +46,13 @@ class StudentDashboardScreen extends StatelessWidget {
 
         final firstName = auth.user?.name.split(' ').first ?? '';
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome banner – Image 1: dark blue, subtle gradient, white + light grey text, no underlines
-            Container(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome banner – Image 1: dark blue, subtle gradient, white + light grey text, no underlines
+              Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               decoration: BoxDecoration(
@@ -103,9 +105,9 @@ class StudentDashboardScreen extends StatelessWidget {
               crossAxisCount: 2,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 0,
-              crossAxisSpacing: 0,
-              childAspectRatio: 1.5,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.88,
               children: [
                 _StatCard(title: lang.t('classes.enrolledClasses'), value: enrolledClasses.length, icon: Icons.menu_book, iconBgColor: const Color(0xFFE0E7FA), iconColor: const Color(0xFF3F51B5)),
                 _StatCard(title: lang.t('assignments.pending'), value: pending, icon: Icons.assignment, iconBgColor: const Color(0xFFFFFBE6), iconColor: const Color(0xFFFFC107)),
@@ -280,6 +282,7 @@ class StudentDashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
           ],
+          ),
         );
       },
     );
@@ -397,20 +400,20 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: iconBgColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: iconColor, size: 22),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               '$value',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -418,11 +421,11 @@ class _StatCard extends StatelessWidget {
                     color: const Color(0xFF3F51B5),
                   ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               title,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 height: 1.2,
                 color: Colors.grey.shade600,
               ),

@@ -7,6 +7,7 @@ class AppConstants {
   static const String registeredUsersKey = 'registeredUsers';
   static const String studentSubscriptionsKey = 'studentSubscriptions';
   static const String sessionUserIdKey = 'sessionUserId';
+  static const String sessionRoleKey = 'sessionRole';
 
   // Demo accounts
   static const String demoStudentPhone = '12345678';

@@ -39,11 +39,13 @@ class TimetableScreen extends StatelessWidget {
         final now = DateTime.now();
         final todayEnglish = _englishDays[now.weekday - 1]; // 1=Monday, 7=Sunday
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header banner – match React
-            Container(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header banner – match React
+              Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               decoration: BoxDecoration(
@@ -171,6 +173,7 @@ class TimetableScreen extends StatelessWidget {
             }),
             const SizedBox(height: 24),
           ],
+          ),
         );
       },
     );

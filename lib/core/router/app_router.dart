@@ -36,9 +36,20 @@ class AppRouter {
   static Future<GoRouter> createRouter() async {
     final prefs = await SharedPreferences.getInstance();
     final languageSelected = prefs.getBool(AppConstants.languageSelectedKey) ?? false;
+    final sessionUserId = prefs.getString(AppConstants.sessionUserIdKey);
+    final sessionRole = prefs.getString(AppConstants.sessionRoleKey);
+
+    String initialLocation = '/language';
+    if (languageSelected) {
+      if (sessionUserId != null) {
+        initialLocation = sessionRole == 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
+      } else {
+        initialLocation = '/login';
+      }
+    }
 
     return GoRouter(
-      initialLocation: languageSelected ? '/login' : '/language',
+      initialLocation: initialLocation,
       redirect: (context, state) async {
         final prefs = await SharedPreferences.getInstance();
         final languageSelected = prefs.getBool(AppConstants.languageSelectedKey) ?? false;

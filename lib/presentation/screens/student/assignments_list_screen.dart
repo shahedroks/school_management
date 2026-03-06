@@ -19,8 +19,7 @@ class AssignmentsListScreen extends StatelessWidget {
         final list = snapshot.data! as List<AssignmentEntity>;
 
         return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 24),
           itemCount: list.length,
           itemBuilder: (_, i) {
             final a = list[i];

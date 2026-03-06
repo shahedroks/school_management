@@ -22,10 +22,12 @@ class AuthRepositoryImpl implements AuthRepository {
     if (id == null) return;
     if (id == _demoStudent.id) {
       _currentUser = _demoStudent;
+      await _prefs.setString(AppConstants.sessionRoleKey, 'student');
       return;
     }
     if (id == _demoTeacher.id) {
       _currentUser = _demoTeacher;
+      await _prefs.setString(AppConstants.sessionRoleKey, 'teacher');
       return;
     }
     final raw = _prefs.getString(AppConstants.registeredUsersKey);
@@ -41,6 +43,7 @@ class AuthRepositoryImpl implements AuthRepository {
           grade: u['grade'] as String?,
           subject: u['subject'] as String?,
         );
+        await _prefs.setString(AppConstants.sessionRoleKey, _currentUser!.role == UserRole.teacher ? 'teacher' : 'student');
         return;
       }
     }
@@ -66,11 +69,13 @@ class AuthRepositoryImpl implements AuthRepository {
     if ((emailOrPhone == AppConstants.demoStudentPhone && password == AppConstants.demoStudentPin)) {
       _currentUser = _demoStudent;
       await _prefs.setString(AppConstants.sessionUserIdKey, _demoStudent.id);
+      await _prefs.setString(AppConstants.sessionRoleKey, 'student');
       return true;
     }
     if ((emailOrPhone == AppConstants.demoTeacherPhone && password == AppConstants.demoTeacherPin)) {
       _currentUser = _demoTeacher;
       await _prefs.setString(AppConstants.sessionUserIdKey, _demoTeacher.id);
+      await _prefs.setString(AppConstants.sessionRoleKey, 'teacher');
       return true;
     }
     final raw = _prefs.getString(AppConstants.registeredUsersKey);
@@ -87,6 +92,7 @@ class AuthRepositoryImpl implements AuthRepository {
           subject: u['subject'] as String?,
         );
         await _prefs.setString(AppConstants.sessionUserIdKey, _currentUser!.id);
+        await _prefs.setString(AppConstants.sessionRoleKey, _currentUser!.role == UserRole.teacher ? 'teacher' : 'student');
         return true;
       }
     }
@@ -97,6 +103,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> logout() async {
     _currentUser = null;
     await _prefs.remove(AppConstants.sessionUserIdKey);
+    await _prefs.remove(AppConstants.sessionRoleKey);
   }
 
   @override
