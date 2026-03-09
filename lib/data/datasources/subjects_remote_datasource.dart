@@ -19,7 +19,7 @@ class SubjectsRemoteDatasource {
   /// GET /subjects. Sends Authorization: Bearer <token> when token is stored.
   Future<List<SubjectEntity>> getSubjects() async {
     if (!isConfigured) return [];
-    final uri = Uri.parse('$_apiBase/subjects');
+    final uri = Uri.parse('$_apiBase/subjects/all');
     final token = _prefs.getString(AppConstants.sessionTokenKey);
     final headers = <String, String>{
       'Content-Type': 'application/json',

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:high_school/core/theme/app_theme.dart';
 import 'package:high_school/domain/entities/class_entity.dart';
 import 'package:high_school/domain/repositories/student_classes_repository.dart';
-import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
 
 class ClassesListScreen extends StatelessWidget {
@@ -114,46 +113,56 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 1,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2), width: 1),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.menu_book_outlined, size: 36, color: AppTheme.primary.withValues(alpha: 0.5)),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              lang.t('classes.noClassesEnrolled'),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.primary,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Card(
+          elevation: 1,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2), width: 1),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withValues(alpha: 0.08),
+                    shape: BoxShape.circle,
                   ),
-              textAlign: TextAlign.center,
+                  child: Icon(
+                    Icons.menu_book_outlined,
+                    size: 36,
+                    color: AppTheme.primary.withValues(alpha: 0.5),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  lang.t('classes.noClassesEnrolled'),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primary,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  lang.t('classes.noClassesEnrolledHint'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              lang.t('classes.noClassesEnrolledHint'),
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-          ],
+          ),
         ),
       ),
     );
