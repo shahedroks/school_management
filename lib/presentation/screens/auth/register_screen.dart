@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:high_school/core/theme/app_theme.dart';
-import 'package:high_school/domain/entities/user_entity.dart';
+import 'package:high_school/domain/entities/subject_entity.dart';
+import 'package:high_school/domain/repositories/subjects_repository.dart';
 import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
 import 'package:high_school/presentation/widgets/language_selector_widget.dart';
@@ -31,6 +31,8 @@ class _RegisterBodyState extends State<_RegisterBody> {
   String _role = 'student';
   String _grade = '';
   String _subject = '';
+  final List<String> _selectedSubjects = [];
+  Future<List<SubjectEntity>>? _subjectsFuture;
   String? _error;
   bool _success = false;
   bool _loading = false;
@@ -44,13 +46,49 @@ class _RegisterBodyState extends State<_RegisterBody> {
     super.dispose();
   }
 
+  Widget _buildSubjectChips(BuildContext context, LanguageProvider lang) {
+    _subjectsFuture ??= context.read<SubjectsRepository>().getSubjects();
+    return FutureBuilder<List<SubjectEntity>>(
+      future: _subjectsFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+          );
+        }
+        final options = snapshot.data!;
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((sub) {
+            final name = sub.name;
+            final selected = _selectedSubjects.contains(name);
+            return FilterChip(
+              label: Text(name),
+              selected: selected,
+              onSelected: (v) {
+                setState(() {
+                  if (v == true) {
+                    _selectedSubjects.add(name);
+                  } else {
+                    _selectedSubjects.remove(name);
+                  }
+                });
+              },
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
   Future<void> _submit() async {
     setState(() {
       _error = null;
       _loading = true;
     });
     final auth = context.read<AuthProvider>();
-    final lang = context.read<LanguageProvider>();
 
     if (_pinController.text != _confirmPinController.text) {
       setState(() {
@@ -73,6 +111,13 @@ class _RegisterBodyState extends State<_RegisterBody> {
       });
       return;
     }
+    if (_role == 'student' && _selectedSubjects.isEmpty) {
+      setState(() {
+        _error = 'Please select at least one subject';
+        _loading = false;
+      });
+      return;
+    }
     if (_role == 'teacher' && _subject.isEmpty) {
       setState(() {
         _error = 'Please enter your subject';
@@ -88,6 +133,7 @@ class _RegisterBodyState extends State<_RegisterBody> {
       role: _role,
       grade: _grade.isEmpty ? null : _grade,
       subject: _subject.isEmpty ? null : _subject,
+      assignedSubjects: _role == 'student' && _selectedSubjects.isNotEmpty ? _selectedSubjects : null,
     );
     if (!mounted) return;
     setState(() {
@@ -99,7 +145,7 @@ class _RegisterBodyState extends State<_RegisterBody> {
     } else if (ok && _role == 'teacher') {
       // Teacher pending - stay on success message
     } else if (!ok) {
-      setState(() => _error = 'Phone number already registered');
+      setState(() => _error = auth.lastAuthError ?? 'Phone number already registered');
     }
   }
 
@@ -162,15 +208,37 @@ class _RegisterBodyState extends State<_RegisterBody> {
                 children: [
                   Radio<String>(value: 'student', groupValue: _role, onChanged: (v) => setState(() => _role = v!)),
                   Text(lang.t('auth.student')),
-                  Radio<String>(value: 'teacher', groupValue: _role, onChanged: (v) => setState(() => _role = v!)),
+                  Radio<String>(value: 'teacher', groupValue: _role, onChanged: (v) => setState(() {
+                    _role = v!;
+                    if (_role == 'teacher') _selectedSubjects.clear();
+                  })),
                   Text(lang.t('auth.teacher')),
                 ],
               ),
               if (_role == 'student') ...[
-                TextField(
-                  onChanged: (v) => setState(() => _grade = v),
-                  decoration: InputDecoration(labelText: lang.t('classes.grade'), hintText: lang.t('auth.gradeExample'), border: const OutlineInputBorder()),
+                Text(lang.t('classes.grade'), style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 4),
+                DropdownButtonFormField<String>(
+                  value: _grade.isNotEmpty && ['4th', '5th', '6th', '7th'].contains(_grade) ? _grade : null,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                  hint: Text(lang.t('auth.gradeExample')),
+                  items: const [
+                    DropdownMenuItem(value: '4th', child: Text('4th')),
+                    DropdownMenuItem(value: '5th', child: Text('5th')),
+                    DropdownMenuItem(value: '6th', child: Text('6th')),
+                    DropdownMenuItem(value: '7th', child: Text('7th')),
+                  ],
+                  onChanged: (v) => setState(() => _grade = v ?? ''),
                 ),
+                const SizedBox(height: 12),
+                Text(lang.t('classes.subject'), style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 4),
+                Text('Select at least one subject', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                const SizedBox(height: 6),
+                _buildSubjectChips(context, lang),
                 const SizedBox(height: 12),
               ],
               if (_role == 'teacher') ...[

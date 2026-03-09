@@ -8,20 +8,16 @@ class SubscriptionProvider with ChangeNotifier {
   final SubscriptionRepository _repo;
 
   StudentSubscriptionEntity? _subscription;
-  List<SubscriptionPlanEntity> _plans = [];
 
   StudentSubscriptionEntity? get subscription => _subscription;
-  List<SubscriptionPlanEntity> get plans => _plans;
 
   Future<void> load(String? studentId) async {
     if (studentId == null) {
       _subscription = null;
-      _plans = await _repo.getPlans();
       notifyListeners();
       return;
     }
     _subscription = await _repo.getSubscriptionForStudent(studentId);
-    _plans = await _repo.getPlans();
     notifyListeners();
   }
 

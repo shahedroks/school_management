@@ -3,10 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:high_school/core/theme/app_theme.dart';
 import 'package:high_school/domain/entities/class_entity.dart';
-import 'package:high_school/domain/repositories/classes_repository.dart';
+import 'package:high_school/domain/repositories/student_classes_repository.dart';
 import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
-import 'package:high_school/presentation/providers/subscription_provider.dart';
 
 class ClassesListScreen extends StatelessWidget {
   const ClassesListScreen({super.key});
@@ -14,23 +13,15 @@ class ClassesListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
-    final auth = context.watch<AuthProvider>();
-    final subscription = context.watch<SubscriptionProvider>();
+    final studentClassesRepo = context.read<StudentClassesRepository>();
 
-    return FutureBuilder(
-      future: Future.wait([
-        context.read<ClassesRepository>().getClasses(),
-        auth.user != null ? subscription.load(auth.user!.id) : Future.value(),
-      ]),
+    return FutureBuilder<List<ClassEntity>>(
+      future: _loadClasses(studentClassesRepo: studentClassesRepo),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final classes = snapshot.data![0] as List<ClassEntity>;
-        final enrolledIds = subscription.subscription?.enrolledClassIds ?? [];
-        final enrolledClasses = enrolledIds.isEmpty
-            ? <ClassEntity>[]
-            : classes.where((c) => enrolledIds.contains(c.id)).toList();
+        final enrolledClasses = snapshot.data!;
 
         // Group by subject (match React)
         final grouped = <String, List<ClassEntity>>{};
@@ -38,19 +29,21 @@ class ClassesListScreen extends StatelessWidget {
           grouped.putIfAbsent(c.subject, () => []).add(c);
         }
 
-        final hasSubscription = subscription.subscription != null;
-        final isEmpty = !hasSubscription || enrolledClasses.isEmpty;
+        // Show "No Classes" only when there are no classes to display
+        final isEmpty = enrolledClasses.isEmpty;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header banner – dark blue, notably rounded corners, subtle bottom shadow
-            Container(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header banner – dark blue, rounded corners, subtle shadow (match image 1)
+              Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               decoration: BoxDecoration(
-                color: AppTheme.primary,
-                borderRadius: BorderRadius.circular(16),
+                color: const Color(0xFF1E3A8A),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.12),
@@ -67,18 +60,20 @@ class ClassesListScreen extends StatelessWidget {
                     lang.t('classes.myClasses'),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 0,
                       decoration: TextDecoration.none,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     lang.t('classes.enrolledClasses'),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.88),
-                      fontSize: 12,
+                    style: const TextStyle(
+                      color: Color(0xFFBFDBFE),
+                      fontSize: 14,
                       fontWeight: FontWeight.normal,
+                      letterSpacing: 0,
                       decoration: TextDecoration.none,
                     ),
                   ),
@@ -96,16 +91,22 @@ class ClassesListScreen extends StatelessWidget {
                   )),
             const SizedBox(height: 24),
           ],
+          ),
         );
       },
     );
   }
+
+  /// Load classes from GET /students/student/classes only (no subscription fallback).
+  static Future<List<ClassEntity>> _loadClasses({
+    required StudentClassesRepository studentClassesRepo,
+  }) async {
+    final apiClasses = await studentClassesRepo.getStudentClasses();
+    return apiClasses.map((item) => item.toClassEntity()).toList();
+  }
 }
 
-// Empty state colors to match design: light yellow border/circle, bright yellow button
-const Color _emptyStateYellow = Color(0xFFFFC107);
-const Color _emptyStateYellowLight = Color(0xFFFFF59D);
-
+// Empty state: neutral "no classes" (no subscription/lock styling)
 class _EmptyState extends StatelessWidget {
   final LanguageProvider lang;
 
@@ -118,7 +119,7 @@ class _EmptyState extends StatelessWidget {
       color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: _emptyStateYellowLight, width: 2),
+        side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2), width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -127,11 +128,11 @@ class _EmptyState extends StatelessWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(
-                color: _emptyStateYellowLight,
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.lock, size: 36, color: _emptyStateYellow),
+              child: Icon(Icons.menu_book_outlined, size: 36, color: AppTheme.primary.withValues(alpha: 0.5)),
             ),
             const SizedBox(height: 20),
             Text(
@@ -144,7 +145,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              lang.t('classes.subscribeToAccess'),
+              lang.t('classes.noClassesEnrolledHint'),
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -152,25 +153,6 @@ class _EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => context.go('/student/subscription'),
-              icon: const Icon(Icons.workspace_premium, size: 20, color: Colors.white),
-              label: Text(
-                lang.t('classes.viewSubscriptionPlans'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _emptyStateYellow,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
           ],
         ),
       ),

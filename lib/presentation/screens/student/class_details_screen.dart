@@ -47,51 +47,53 @@ class ClassDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Class header – gradient banner
+                // Class header – gradient banner (compact)
                 Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [primaryColor, primaryColorDark],
+                  width: double.infinity,
+                
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [primaryColor, primaryColorDark],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryColor.withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(cls.name, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 2),
+                      Text(cls.teacher, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 13)),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 2,
+                        children: [
+                          Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(Icons.calendar_today, size: 12, color: Colors.white.withValues(alpha: 0.9)),
+                            const SizedBox(width: 4),
+                            Text(cls.schedule, style: TextStyle(color: Colors.white.withValues(alpha: 0.95), fontSize: 11)),
+                          ]),
+                          Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(Icons.people, size: 12, color: Colors.white.withValues(alpha: 0.9)),
+                            const SizedBox(width: 4),
+                            Text('${cls.students} ${lang.t('classes.students')}', style: TextStyle(color: Colors.white.withValues(alpha: 0.95), fontSize: 11)),
+                          ]),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(cls.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(cls.teacher, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 6,
-                      children: [
-                        Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.calendar_today, size: 14, color: Colors.white.withValues(alpha: 0.9)),
-                          const SizedBox(width: 6),
-                          Text(cls.schedule, style: TextStyle(color: Colors.white.withValues(alpha: 0.95), fontSize: 12)),
-                        ]),
-                        Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.people, size: 14, color: Colors.white.withValues(alpha: 0.9)),
-                          const SizedBox(width: 6),
-                          Text('${cls.students} ${lang.t('classes.students')}', style: TextStyle(color: Colors.white.withValues(alpha: 0.95), fontSize: 12)),
-                        ]),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 16),
               // Tabs
               TabBar(

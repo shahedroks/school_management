@@ -39,6 +39,18 @@ class LayoutWidget extends StatelessWidget {
     final location = GoRouterState.of(context).uri.path;
     final canGoBack = !location.contains('dashboard');
 
+    void onBackPressed() {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        final segments = location.split('/').where((s) => s.isNotEmpty).toList();
+        if (segments.length > 2) {
+          final parentPath = '/${segments.sublist(0, segments.length - 1).join('/')}';
+          context.go(parentPath);
+        }
+      }
+    }
+
     return Column(
       children: [
         Material(
@@ -53,7 +65,7 @@ class LayoutWidget extends StatelessWidget {
                   if (canGoBack)
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: AppTheme.primary),
-                      onPressed: () => context.pop(),
+                      onPressed: onBackPressed,
                     )
                   else
                     Row(
@@ -98,35 +110,98 @@ class LayoutWidget extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.more_vert, color: AppTheme.primary),
                     onPressed: () {
+                      final roleLabel = user.role == UserRole.student
+                          ? lang.t('auth.student')
+                          : lang.t('auth.teacher');
                       showModalBottomSheet(
                         context: context,
-                        builder: (ctx) => SafeArea(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.person),
-                                title: Text(user.name),
-                                subtitle: Text(user.role.name),
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.person_outline),
-                                title: Text(lang.t('profile.myProfile')),
-                                onTap: () {
-                                  Navigator.pop(ctx);
-                                  context.go(isStudent ? '/student/profile' : '/teacher/profile');
-                                },
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.logout),
-                                title: Text(lang.t('common.logout')),
-                                onTap: () async {
-                                  await auth.logout();
-                                  if (ctx.mounted) Navigator.pop(ctx);
-                                  if (context.mounted) context.go('/login');
-                                },
+                        backgroundColor: Colors.transparent,
+                        builder: (ctx) => Container(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 12,
+                                offset: Offset(0, -2),
                               ),
                             ],
+                          ),
+                          child: SafeArea(
+                            top: false,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 24,
+                                        backgroundColor: AppTheme.primary,
+                                        child: Text(
+                                          _initials(user.name),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              user.name,
+                                              style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: const Color(0xFF1A1A1A),
+                                                  ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              roleLabel,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Divider(height: 1),
+                                ListTile(
+                                  leading: const Icon(Icons.person_outline, color: AppTheme.primary, size: 22),
+                                  title: Text(
+                                    lang.t('profile.myProfile'),
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    context.go(isStudent ? '/student/profile' : '/teacher/profile');
+                                  },
+                                ),
+                                ListTile(
+                                  leading: const Icon(Icons.logout, color: AppTheme.primary, size: 22),
+                                  title: Text(
+                                    lang.t('common.logout'),
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                  onTap: () async {
+                                    await auth.logout();
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                    if (context.mounted) context.go('/login');
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -140,9 +215,7 @@ class LayoutWidget extends StatelessWidget {
         Expanded(
           child: Container(
             color: const Color(0xFFF8FAFC),
-            child: SingleChildScrollView(
-              child: Padding(padding: const EdgeInsets.all(16), child: child),
-            ),
+            child: Padding(padding: const EdgeInsets.all(16), child: child),
           ),
         ),
         Material(

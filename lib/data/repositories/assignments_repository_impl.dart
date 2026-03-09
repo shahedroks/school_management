@@ -31,4 +31,9 @@ class AssignmentsRepositoryImpl implements AssignmentsRepository {
       return null;
     }
   }
+
+  @override
+  Future<void> addAssignment(AssignmentEntity assignment) async {
+    MockData.assignments.add(assignment);
+  }
 }

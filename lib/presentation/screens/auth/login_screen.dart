@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:high_school/core/constants/app_constants.dart';
 import 'package:high_school/core/theme/app_theme.dart';
 import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
@@ -65,9 +64,7 @@ class _LoginBodyState extends State<_LoginBody> {
         context.go('/teacher/dashboard');
       }
     } else {
-      setState(() => _error = lang.t('auth.teacherAccountPending').contains('approval')
-          ? 'Invalid credentials or account not approved yet.'
-          : 'Invalid credentials.');
+      setState(() => _error = auth.lastAuthError ?? 'Invalid credentials or account not approved yet.');
     }
   }
 
@@ -232,87 +229,12 @@ class _LoginBodyState extends State<_LoginBody> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    Center(
-                      child: Text(
-                        'Demo Accounts:',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: Colors.black87,
-                            ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _DemoCard(
-                            title: lang.t('auth.studentAccount'),
-                            phone: AppConstants.demoStudentPhone,
-                            pin: AppConstants.demoStudentPin,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _DemoCard(
-                            title: lang.t('auth.teacherAccount'),
-                            phone: AppConstants.demoTeacherPhone,
-                            pin: AppConstants.demoTeacherPin,
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DemoCard extends StatelessWidget {
-  final String title;
-  final String phone;
-  final String pin;
-
-  const _DemoCard({
-    required this.title,
-    required this.phone,
-    required this.pin,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Phone: $phone',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'PIN: $pin',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-          ),
-        ],
       ),
     );
   }

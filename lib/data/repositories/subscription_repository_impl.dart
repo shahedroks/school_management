@@ -51,9 +51,6 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   }
 
   @override
-  Future<List<SubscriptionPlanEntity>> getPlans() async => MockData.subscriptionPlans;
-
-  @override
   Future<void> subscribe(String studentId, String planId, List<String> classIds) async {
     _load();
     _subs.removeWhere((s) => s.studentId == studentId && s.status == 'active');

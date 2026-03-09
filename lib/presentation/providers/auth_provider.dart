@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:high_school/data/datasources/auth_remote_datasource.dart';
 import 'package:high_school/domain/entities/user_entity.dart';
 import 'package:high_school/domain/repositories/auth_repository.dart';
 
@@ -10,18 +11,30 @@ class AuthProvider with ChangeNotifier {
   UserEntity? get user => _authRepository.currentUser;
   bool get isAuthenticated => _authRepository.isAuthenticated;
 
+  /// Last error message from login/register API (e.g. validation message). Cleared on next attempt.
+  String? lastAuthError;
+
   Future<void> restoreSession() async {
+    lastAuthError = null;
     await _authRepository.restoreSession();
     notifyListeners();
   }
 
   Future<bool> login(String emailOrPhone, String password) async {
-    final ok = await _authRepository.login(emailOrPhone, password);
-    if (ok) notifyListeners();
-    return ok;
+    lastAuthError = null;
+    try {
+      final ok = await _authRepository.login(emailOrPhone, password);
+      if (ok) notifyListeners();
+      return ok;
+    } on AuthApiException catch (e) {
+      lastAuthError = e.message;
+      notifyListeners();
+      return false;
+    }
   }
 
   Future<void> logout() async {
+    lastAuthError = null;
     await _authRepository.logout();
     notifyListeners();
   }
@@ -33,9 +46,18 @@ class AuthProvider with ChangeNotifier {
     required String role,
     String? grade,
     String? subject,
+    List<String>? assignedSubjectIds,
+    List<String>? assignedSubjects,
   }) async {
-    final ok = await _authRepository.register(name: name, phone: phone, pin: pin, role: role, grade: grade, subject: subject);
-    if (ok) notifyListeners();
-    return ok;
+    lastAuthError = null;
+    try {
+      final ok = await _authRepository.register(name: name, phone: phone, pin: pin, role: role, grade: grade, subject: subject, assignedSubjectIds: assignedSubjectIds, assignedSubjects: assignedSubjects);
+      if (ok) notifyListeners();
+      return ok;
+    } on AuthApiException catch (e) {
+      lastAuthError = e.message;
+      notifyListeners();
+      return false;
+    }
   }
 }

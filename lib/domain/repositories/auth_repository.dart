@@ -13,5 +13,7 @@ abstract class AuthRepository {
     required String role,
     String? grade,
     String? subject,
+    List<String>? assignedSubjectIds,
+    List<String>? assignedSubjects,
   });
 }

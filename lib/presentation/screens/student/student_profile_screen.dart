@@ -31,6 +31,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     return name.trim().split(RegExp(r'\s+')).map((s) => s.isNotEmpty ? s[0] : '').take(2).join().toUpperCase();
   }
 
+  /// Use translation; if the key is returned unchanged (missing translation), use fallback.
+  static String _t(LanguageProvider lang, String key, String fallback) {
+    final s = lang.t(key);
+    return (s == key || s.isEmpty) ? fallback : s;
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
@@ -53,27 +59,28 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         final enrolledClasses = classes.where((c) => enrolledIds.contains(c.id)).toList();
         final completedCount = assignments.where((a) => a.status == AssignmentStatus.graded || a.status == AssignmentStatus.submitted).length;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(lang),
-            const SizedBox(height: 16),
-            _buildProfileCard(context, user, lang),
-            const SizedBox(height: 16),
-            _buildAcademicCard(context, lang, enrolledClasses.length, completedCount, assignments.length),
-            const SizedBox(height: 16),
-            _buildParentCard(context, lang),
-            const SizedBox(height: 16),
-            _buildCurrentClassesCard(context, lang, enrolledClasses),
-            const SizedBox(height: 16),
-            Text(lang.t('profile.languagePreference'), style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            const LanguageSelectorWidget(),
-            const SizedBox(height: 16),
-            _buildAchievementsCard(context, lang),
-            const SizedBox(height: 24),
-          ],
-        );
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(lang),
+          const SizedBox(height: 16),
+          _buildProfileCard(context, user, lang),
+          const SizedBox(height: 16),
+          _buildAcademicCard(context, lang, enrolledClasses.length, completedCount, assignments.length),
+          const SizedBox(height: 16),
+          _buildParentCard(context, lang),
+          const SizedBox(height: 16),
+          _buildCurrentClassesCard(context, lang, enrolledClasses),
+          const SizedBox(height: 16),
+          _buildLanguageCard(context, lang),
+          const SizedBox(height: 16),
+          _buildAchievementsCard(context, lang),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
       },
     );
   }
@@ -92,7 +99,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         children: [
           Text(lang.t('profile.myProfile'), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, decoration: TextDecoration.none)),
           const SizedBox(height: 6),
-          Text(lang.t('profile.managePersonalInfo'), style: TextStyle(color: Colors.white.withValues(alpha: 0.88), fontSize: 15, decoration: TextDecoration.none)),
+          Text(_t(lang, 'profile.managePersonalInfo', 'Manage your personal information'), style: TextStyle(color: Colors.white.withValues(alpha: 0.88), fontSize: 15, decoration: TextDecoration.none)),
         ],
       ),
     );
@@ -116,7 +123,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             OutlinedButton.icon(
               onPressed: () => _showEditDialog(context, user, lang),
               icon: const Icon(Icons.edit, size: 18),
-              label: Text(lang.t('profile.editProfile')),
+              label: Text(_t(lang, 'profile.editProfile', 'Edit Profile')),
               style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primary),
             ),
             const Divider(height: 24),
@@ -144,7 +151,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(lang.t('profile.editProfile')),
+        title: Text(_t(lang, 'profile.editProfile', 'Edit Profile')),
         content: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
           child: SingleChildScrollView(
@@ -221,7 +228,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [Icon(Icons.emoji_events, size: 20, color: AppTheme.primary), const SizedBox(width: 8), Text(lang.t('profile.academicOverview'), style: Theme.of(context).textTheme.titleMedium)]),
+            Row(children: [Icon(Icons.school, size: 20, color: AppTheme.primary), const SizedBox(width: 8), Text(lang.t('profile.academicOverview'), style: Theme.of(context).textTheme.titleMedium)]),
             const SizedBox(height: 12),
             GridView.count(
               shrinkWrap: true,
@@ -300,6 +307,32 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     ]),
                   ),
                 )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageCard(BuildContext context, LanguageProvider lang) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2), width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lang.t('profile.languagePreference'),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primary,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            const LanguageSelectorWidget(),
           ],
         ),
       ),

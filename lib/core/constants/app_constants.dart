@@ -7,6 +7,12 @@ class AppConstants {
   static const String registeredUsersKey = 'registeredUsers';
   static const String studentSubscriptionsKey = 'studentSubscriptions';
   static const String sessionUserIdKey = 'sessionUserId';
+  static const String sessionRoleKey = 'sessionRole';
+  static const String sessionTokenKey = 'sessionToken';
+  static const String sessionUserJsonKey = 'sessionUserJson';
+
+  /// Base URL for API (e.g. https://your-api.com). Empty = use mock auth only.
+  static const String apiBaseUrl = 'http://103.208.181.235:5005';
 
   // Demo accounts
   static const String demoStudentPhone = '12345678';

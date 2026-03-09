@@ -40,6 +40,7 @@ class MockData {
   static final List<SubmissionEntity> submissions = [
     SubmissionEntity(id: 'sub1', assignmentId: 'assign1', studentId: 'student1', studentName: 'Fatima Ahmed', fileUrl: '/files/fatima-worksheet.pdf', submittedAt: '2026-01-26T14:30:00', status: 'submitted'),
     SubmissionEntity(id: 'sub2', assignmentId: 'assign1', studentId: 'student2', studentName: 'Ali Hassan', fileUrl: '/files/ali-worksheet.pdf', submittedAt: '2026-01-26T16:20:00', status: 'graded', grade: 95, feedback: 'Excellent work!'),
+    SubmissionEntity(id: 'sub3', assignmentId: 'assign1', studentId: 'student3', studentName: 'Mariam Ould', submittedAt: '2026-01-27T10:00:00', status: 'submitted'),
   ];
 
   static final List<StudentEntity> students = [
@@ -71,14 +72,63 @@ class MockData {
     NotificationEntity(id: 'not3', type: NotificationType.admin, from: 'Administration', message: 'Reminder: Submit mid-term grades by February 5th', timestamp: '2026-01-28T09:00:00', read: true),
   ];
 
-  static final List<SubscriptionPlanEntity> subscriptionPlans = [
-    SubscriptionPlanEntity(id: 'plan1', name: 'Basic Plan', price: 19.99, duration: 'monthly', features: ['Access to 3 core subjects', 'Weekly live sessions'], classIds: ['class1', 'class2', 'class3'], maxClasses: 3),
-    SubscriptionPlanEntity(id: 'plan2', name: 'Standard Plan', price: 34.99, duration: 'monthly', features: ['Access to 5 subjects', 'Unlimited live sessions'], classIds: ['class1', 'class2', 'class3', 'class4', 'class5'], maxClasses: 5, popular: true),
-    SubscriptionPlanEntity(id: 'plan3', name: 'Premium Plan', price: 49.99, duration: 'monthly', features: ['Access to ALL subjects', 'Unlimited live sessions'], classIds: ['class1', 'class2', 'class3', 'class4', 'class5', 'class6', 'class7', 'class8'], maxClasses: 8),
-  ];
-
   static final List<StudentSubscriptionEntity> studentSubscriptions = [
     StudentSubscriptionEntity(studentId: 'student1', planId: 'plan2', enrolledClassIds: ['class1', 'class2', 'class3', 'class4', 'class5'], startDate: '2026-01-01', endDate: '2026-02-01', status: 'active'),
     StudentSubscriptionEntity(studentId: 'demo_student', planId: 'plan2', enrolledClassIds: ['class1', 'class2', 'class3', 'class4', 'class5'], startDate: '2026-01-01', endDate: '2026-02-01', status: 'active'),
   ];
+
+  static const List<AttendanceRecord> attendanceRecords = [
+    AttendanceRecord(id: 'att1', studentId: 'student1', classId: 'class1', date: '2026-01-20', status: 'present'),
+    AttendanceRecord(id: 'att2', studentId: 'student1', classId: 'class1', date: '2026-01-22', status: 'present'),
+    AttendanceRecord(id: 'att3', studentId: 'student1', classId: 'class1', date: '2026-01-24', status: 'late', notes: 'Arrived 10 minutes late'),
+    AttendanceRecord(id: 'att4', studentId: 'student1', classId: 'class1', date: '2026-01-27', status: 'absent', notes: 'Sick leave'),
+    AttendanceRecord(id: 'att5', studentId: 'student1', classId: 'class1', date: '2026-01-29', status: 'present'),
+    AttendanceRecord(id: 'att6', studentId: 'student2', classId: 'class1', date: '2026-01-20', status: 'present'),
+    AttendanceRecord(id: 'att7', studentId: 'student2', classId: 'class1', date: '2026-01-22', status: 'absent'),
+    AttendanceRecord(id: 'att8', studentId: 'student3', classId: 'class1', date: '2026-01-20', status: 'present'),
+    AttendanceRecord(id: 'att9', studentId: 'student3', classId: 'class1', date: '2026-01-24', status: 'present'),
+  ];
+
+  static const List<StudentProgressData> studentProgressList = [
+    StudentProgressData(studentId: 'student1', classId: 'class1', overallGrade: 92, assignmentsCompleted: 3, assignmentsTotal: 4, present: 3, absent: 1, late: 1, total: 5, lastActivity: '2026-01-26T14:30:00'),
+    StudentProgressData(studentId: 'student2', classId: 'class1', overallGrade: 88, assignmentsCompleted: 2, assignmentsTotal: 4, present: 2, absent: 2, late: 1, total: 5, lastActivity: '2026-01-27T16:20:00'),
+    StudentProgressData(studentId: 'student3', classId: 'class1', overallGrade: 95, assignmentsCompleted: 4, assignmentsTotal: 4, present: 4, absent: 0, late: 1, total: 5, lastActivity: '2026-01-29T09:15:00'),
+    StudentProgressData(studentId: 'student4', classId: 'class1', overallGrade: 65, assignmentsCompleted: 1, assignmentsTotal: 4, present: 2, absent: 3, late: 0, total: 5, lastActivity: '2026-01-25T10:00:00'),
+    StudentProgressData(studentId: 'student5', classId: 'class1', overallGrade: 78, assignmentsCompleted: 2, assignmentsTotal: 4, present: 2, absent: 2, late: 1, total: 5, lastActivity: '2026-01-28T11:00:00'),
+  ];
+}
+
+class AttendanceRecord {
+  final String id;
+  final String studentId;
+  final String classId;
+  final String date;
+  final String status;
+  final String? notes;
+  const AttendanceRecord({required this.id, required this.studentId, required this.classId, required this.date, required this.status, this.notes});
+}
+
+class StudentProgressData {
+  final String studentId;
+  final String classId;
+  final int overallGrade;
+  final int assignmentsCompleted;
+  final int assignmentsTotal;
+  final int present;
+  final int absent;
+  final int late;
+  final int total;
+  final String lastActivity;
+  const StudentProgressData({
+    required this.studentId,
+    required this.classId,
+    required this.overallGrade,
+    required this.assignmentsCompleted,
+    required this.assignmentsTotal,
+    required this.present,
+    required this.absent,
+    required this.late,
+    required this.total,
+    required this.lastActivity,
+  });
 }

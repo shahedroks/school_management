@@ -37,11 +37,13 @@ class LiveSessionsScreen extends StatelessWidget {
           }
         }
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header banner – match React
-            Container(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header banner – match React
+              Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
               decoration: BoxDecoration(
@@ -129,6 +131,7 @@ class LiveSessionsScreen extends StatelessWidget {
             ],
             const SizedBox(height: 24),
           ],
+          ),
         );
       },
     );
