@@ -15,6 +15,8 @@ import 'package:high_school/domain/repositories/subscription_repository.dart';
 import 'package:high_school/domain/repositories/subjects_repository.dart';
 import 'package:high_school/domain/repositories/student_dashboard_repository.dart';
 import 'package:high_school/domain/repositories/student_classes_repository.dart';
+import 'package:high_school/domain/repositories/teacher_dashboard_repository.dart';
+import 'package:high_school/domain/repositories/teacher_classes_repository.dart';
 import 'package:high_school/data/repositories/auth_repository_impl.dart';
 import 'package:high_school/data/repositories/classes_repository_impl.dart';
 import 'package:high_school/data/repositories/lessons_repository_impl.dart';
@@ -27,6 +29,8 @@ import 'package:high_school/data/repositories/subscription_repository_impl.dart'
 import 'package:high_school/data/repositories/subjects_repository_impl.dart';
 import 'package:high_school/data/repositories/student_dashboard_repository_impl.dart';
 import 'package:high_school/data/repositories/student_classes_repository_impl.dart';
+import 'package:high_school/data/repositories/teacher_dashboard_repository_impl.dart';
+import 'package:high_school/data/repositories/teacher_classes_repository_impl.dart';
 import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
 import 'package:high_school/presentation/providers/subscription_provider.dart';
@@ -41,7 +45,7 @@ void main() async {
   final LessonsRepository lessonsRepo = LessonsRepositoryImpl();
   final AssignmentsRepository assignmentsRepo = AssignmentsRepositoryImpl();
   final StudentsRepository studentsRepo = StudentsRepositoryImpl();
-  final TimetableRepository timetableRepo = TimetableRepositoryImpl();
+  final TimetableRepository timetableRepo = TimetableRepositoryImpl(prefs);
   final LiveSessionsRepository liveSessionsRepo = LiveSessionsRepositoryImpl();
   final NotificationsRepository notificationsRepo =
       NotificationsRepositoryImpl();
@@ -52,6 +56,10 @@ void main() async {
       StudentDashboardRepositoryImpl(prefs);
   final StudentClassesRepository studentClassesRepo =
       StudentClassesRepositoryImpl(prefs);
+  final TeacherDashboardRepository teacherDashboardRepo =
+      TeacherDashboardRepositoryImpl(prefs);
+  final TeacherClassesRepository teacherClassesRepo =
+      TeacherClassesRepositoryImpl(prefs, classesRepo);
 
   // Providers
   final authProvider = AuthProvider(authRepo);
@@ -80,6 +88,8 @@ void main() async {
         Provider<SubjectsRepository>.value(value: subjectsRepo),
         Provider<StudentDashboardRepository>.value(value: studentDashboardRepo),
         Provider<StudentClassesRepository>.value(value: studentClassesRepo),
+        Provider<TeacherDashboardRepository>.value(value: teacherDashboardRepo),
+        Provider<TeacherClassesRepository>.value(value: teacherClassesRepo),
       ],
       child: MaterialApp.router(
         title: 'Nouadhibou High School',

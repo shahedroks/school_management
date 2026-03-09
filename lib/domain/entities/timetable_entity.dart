@@ -17,3 +17,15 @@ class TimetableEntryEntity {
     required this.room,
   });
 }
+
+/// Result of getTimetable(): entries plus optional API "today" day code (e.g. "mon").
+class TimetableResult {
+  const TimetableResult({
+    required this.entries,
+    this.todayDayCode,
+  });
+
+  final List<TimetableEntryEntity> entries;
+  /// From API data.today; null when using mock.
+  final String? todayDayCode;
+}

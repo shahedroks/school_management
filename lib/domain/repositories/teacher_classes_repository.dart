@@ -1,0 +1,11 @@
+import '../entities/class_entity.dart';
+
+/// Teacher classes: GET /classes/my and GET /classes/:classId.
+/// Use for teacher classes list and class details; falls back to [ClassesRepository] when API not configured.
+abstract class TeacherClassesRepository {
+  /// GET /classes/my when API configured; else fallback by teacherId.
+  Future<List<ClassEntity>> getMyClasses(String? teacherIdForFallback);
+
+  /// GET /classes/:classId when API configured; else fallback.
+  Future<ClassEntity?> getClassById(String classId);
+}

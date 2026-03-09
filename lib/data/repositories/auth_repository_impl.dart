@@ -172,8 +172,11 @@ class AuthRepositoryImpl implements AuthRepository {
     required String role,
     String? grade,
     String? subject,
+    String? subjectId,
     List<String>? assignedSubjectIds,
     List<String>? assignedSubjects,
+    List<String>? assignedGradeIds,
+    List<String>? assignedGrades,
   }) async {
     if (_remote.isConfigured) {
       try {
@@ -193,8 +196,10 @@ class AuthRepositoryImpl implements AuthRepository {
                 name: name,
                 phone: phone,
                 pin: pin,
+                subjectId: subjectId,
                 subject: subject,
-                assignedGrades: null,
+                assignedGradeIds: assignedGradeIds,
+                assignedGrades: assignedGrades,
               );
         await _saveApiSession(res.token, res.user);
         final user = _userFromMap(res.user);

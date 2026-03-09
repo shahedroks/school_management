@@ -31,7 +31,10 @@ class _RegisterBodyState extends State<_RegisterBody> {
   String _role = 'student';
   String _grade = '';
   String _subject = '';
+  String? _teacherSubjectId;
   final List<String> _selectedSubjects = [];
+  final List<String> _selectedTeacherGrades = [];
+  static const List<String> _teacherGradeOptions = ['4th', '5th', '6th', '7th'];
   Future<List<SubjectEntity>>? _subjectsFuture;
   String? _error;
   bool _success = false;
@@ -83,12 +86,59 @@ class _RegisterBodyState extends State<_RegisterBody> {
     );
   }
 
+  Widget _buildTeacherSubjectDropdown(BuildContext context, LanguageProvider lang) {
+    _subjectsFuture ??= context.read<SubjectsRepository>().getSubjects();
+    return FutureBuilder<List<SubjectEntity>>(
+      future: _subjectsFuture,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+          );
+        }
+        final subjects = snapshot.data!;
+        return DropdownButtonFormField<String>(
+          value: _teacherSubjectId,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          ),
+          hint: Text(lang.t('auth.subjectExample')),
+          items: subjects
+              .map(
+                (s) => DropdownMenuItem<String>(
+                  value: s.id,
+                  child: Text(s.name),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _teacherSubjectId = value;
+              if (value == null) {
+                _subject = '';
+              } else {
+                final selected = subjects.firstWhere(
+                  (s) => s.id == value,
+                  orElse: () => subjects.first,
+                );
+                _subject = selected.name;
+              }
+            });
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _submit() async {
     setState(() {
       _error = null;
       _loading = true;
     });
     final auth = context.read<AuthProvider>();
+    final lang = context.read<LanguageProvider>();
 
     if (_pinController.text != _confirmPinController.text) {
       setState(() {
@@ -118,9 +168,16 @@ class _RegisterBodyState extends State<_RegisterBody> {
       });
       return;
     }
-    if (_role == 'teacher' && _subject.isEmpty) {
+    if (_role == 'teacher' && _teacherSubjectId == null) {
       setState(() {
         _error = 'Please enter your subject';
+        _loading = false;
+      });
+      return;
+    }
+    if (_role == 'teacher' && _selectedTeacherGrades.isEmpty) {
+      setState(() {
+        _error = lang.t('auth.selectAtLeastOneGrade');
         _loading = false;
       });
       return;
@@ -133,7 +190,9 @@ class _RegisterBodyState extends State<_RegisterBody> {
       role: _role,
       grade: _grade.isEmpty ? null : _grade,
       subject: _subject.isEmpty ? null : _subject,
+      subjectId: _teacherSubjectId,
       assignedSubjects: _role == 'student' && _selectedSubjects.isNotEmpty ? _selectedSubjects : null,
+      assignedGrades: _role == 'teacher' && _selectedTeacherGrades.isNotEmpty ? _selectedTeacherGrades : null,
     );
     if (!mounted) return;
     setState(() {
@@ -206,12 +265,26 @@ class _RegisterBodyState extends State<_RegisterBody> {
               Text(lang.t('auth.iAmA'), style: Theme.of(context).textTheme.labelMedium),
               Row(
                 children: [
-                  Radio<String>(value: 'student', groupValue: _role, onChanged: (v) => setState(() => _role = v!)),
+                  Radio<String>(
+                    value: 'student',
+                    groupValue: _role,
+                    onChanged: (v) => setState(() {
+                      _role = v!;
+                      _selectedTeacherGrades.clear();
+                      _teacherSubjectId = null;
+                      _subject = '';
+                    }),
+                  ),
                   Text(lang.t('auth.student')),
-                  Radio<String>(value: 'teacher', groupValue: _role, onChanged: (v) => setState(() {
-                    _role = v!;
-                    if (_role == 'teacher') _selectedSubjects.clear();
-                  })),
+                  Radio<String>(
+                    value: 'teacher',
+                    groupValue: _role,
+                    onChanged: (v) => setState(() {
+                      _role = v!;
+                      _selectedSubjects.clear();
+                      _grade = '';
+                    }),
+                  ),
                   Text(lang.t('auth.teacher')),
                 ],
               ),
@@ -242,9 +315,33 @@ class _RegisterBodyState extends State<_RegisterBody> {
                 const SizedBox(height: 12),
               ],
               if (_role == 'teacher') ...[
-                TextField(
-                  onChanged: (v) => setState(() => _subject = v),
-                  decoration: InputDecoration(labelText: lang.t('classes.subject'), hintText: lang.t('auth.subjectExample'), border: const OutlineInputBorder()),
+                Text(lang.t('classes.subject'), style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 4),
+                _buildTeacherSubjectDropdown(context, lang),
+                const SizedBox(height: 12),
+                Text(lang.t('classes.grade'), style: Theme.of(context).textTheme.labelMedium),
+                const SizedBox(height: 4),
+                Text(lang.t('auth.selectAtLeastOneGrade'), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _teacherGradeOptions.map((g) {
+                    final selected = _selectedTeacherGrades.contains(g);
+                    return FilterChip(
+                      label: Text(g),
+                      selected: selected,
+                      onSelected: (v) {
+                        setState(() {
+                          if (v == true) {
+                            _selectedTeacherGrades.add(g);
+                          } else {
+                            _selectedTeacherGrades.remove(g);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 12),
               ],

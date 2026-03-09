@@ -60,6 +60,7 @@ const Map<String, dynamic> translationsAr = {
     'studentAccountCreated': 'تم إنشاء حسابك كطالب بنجاح.',
     'accountDetails': 'تفاصيل الحساب:',
     'goToLogin': 'الانتقال إلى تسجيل الدخول',
+    'selectAtLeastOneGrade': 'اختر صفاً واحداً على الأقل',
   },
   'nav': {'home': 'الرئيسية', 'classes': 'الصفوف', 'assignments': 'الواجبات', 'timetable': 'الجدول الزمني', 'sessions': 'الجلسات المباشرة', 'profile': 'الملف الشخصي', 'students': 'الطلاب', 'analytics': 'التحليلات', 'notifications': 'الإشعارات'},
   'dashboard': {'welcomeBack': 'مرحباً بعودتك', 'overview': 'إليك ما يحدث اليوم', 'teachingOverview': 'إليك نظرة عامة على التدريس'},

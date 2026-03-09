@@ -60,6 +60,7 @@ const Map<String, dynamic> translationsEn = {
     'studentAccountCreated': 'Your student account has been created successfully.',
     'accountDetails': 'Account Details:',
     'goToLogin': 'Go to Login',
+    'selectAtLeastOneGrade': 'Select at least one grade',
   },
   'nav': {
     'home': 'Home',

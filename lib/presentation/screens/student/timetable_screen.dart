@@ -25,23 +25,35 @@ class TimetableScreen extends StatelessWidget {
     'Friday',
   ];
 
+  static const Map<String, String> _dayCodeToEnglish = {
+    'sun': 'Sunday',
+    'mon': 'Monday',
+    'tue': 'Tuesday',
+    'wed': 'Wednesday',
+    'thu': 'Thursday',
+    'fri': 'Friday',
+    'sat': 'Saturday',
+  };
+
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
 
-    return FutureBuilder<List<TimetableEntryEntity>>(
+    return FutureBuilder<TimetableResult>(
       future: context.read<TimetableRepository>().getTimetable(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final allEntries = snapshot.data!;
+        final result = snapshot.data!;
+        final allEntries = result.entries;
         final now = DateTime.now();
-        // Only mark "today" for Monday–Friday; avoid out-of-range index on weekends
-        final String? todayEnglish = (now.weekday >= DateTime.monday &&
-                now.weekday <= DateTime.friday)
-            ? _englishDays[now.weekday - DateTime.monday]
-            : null;
+        // Use API today when available; otherwise device weekday (Mon–Fri only)
+        final String? todayEnglish = result.todayDayCode != null
+            ? _dayCodeToEnglish[result.todayDayCode!]
+            : (now.weekday >= DateTime.monday && now.weekday <= DateTime.friday)
+                ? _englishDays[now.weekday - DateTime.monday]
+                : null;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 24),
