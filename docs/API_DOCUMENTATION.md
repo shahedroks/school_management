@@ -1,5 +1,17 @@
 # High School Management Backend API Documentation
 
+## Postman Collection
+
+A Postman collection with **all endpoints** from this document is available as:
+
+**`docs/High_School_Management_API.postman_collection.json`**
+
+- **Import in Postman:** File → Import → Upload the JSON file.
+- **Collection variables:** `base_url` (default: `http://103.208.181.235:5005`), `token`, `admin_token`, `teacher_token`, `student_token`, `grade_id`, `subject_id`, `class_id`, `lesson_id`, `assignment_id`, `session_id`, `student_id`, `submission_id`, `user_id`. Set `token` (or role-specific token) after login for protected routes.
+- **Auth:** Collection uses Bearer token; set `token` in collection variables after `POST /auth/login` (e.g. from response `data.token`).
+
+---
+
 ## API List (All Endpoints)
 
 - **Base & Health**

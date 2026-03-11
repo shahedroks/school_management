@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:high_school/core/constants/app_constants.dart';
+import 'package:high_school/core/network/api_response_helper.dart';
 import 'package:high_school/domain/entities/subject_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,12 +28,17 @@ class SubjectsRemoteDatasource {
     };
     final response = await http.get(uri, headers: headers);
     if (response.statusCode != 200) return [];
-    return _parseSubjectsResponse(response.body);
+    try {
+      return _parseSubjectsResponse(response.body);
+    } on UnauthorizedApiException {
+      return [];
+    }
   }
 
   List<SubjectEntity> _parseSubjectsResponse(String body) {
     try {
       final decoded = jsonDecode(body) as Map<String, dynamic>?;
+      ensureAuthorized(decoded);
       if (decoded == null) return [];
       // Support both { "data": [...] } and { "status": "success", "data": [...] }
       final data = decoded['data'];
@@ -44,6 +50,8 @@ class SubjectsRemoteDatasource {
               e is Map<String, dynamic> ? e : Map<String, dynamic>.from(e as Map)))
           .where((s) => s.id.isNotEmpty && s.name.isNotEmpty)
           .toList();
+    } on UnauthorizedApiException {
+      rethrow;
     } catch (_) {
       return [];
     }

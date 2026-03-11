@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:high_school/core/constants/app_constants.dart';
+import 'package:high_school/core/network/api_response_helper.dart';
 import 'package:high_school/domain/entities/teacher_dashboard_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,7 +32,13 @@ class TeacherDashboardRemoteDatasource {
       },
     );
     if (response.statusCode != 200) return null;
-    return _parse(response.body);
+    try {
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>?;
+      ensureAuthorized(decoded);
+      return _parse(response.body);
+    } on UnauthorizedApiException {
+      return null;
+    }
   }
 
   TeacherDashboardEntity? _parse(String body) {
@@ -44,6 +51,8 @@ class TeacherDashboardRemoteDatasource {
           ? data
           : Map<String, dynamic>.from(data as Map);
       return TeacherDashboardEntity.fromJson(map);
+    } on UnauthorizedApiException {
+      rethrow;
     } catch (_) {
       return null;
     }

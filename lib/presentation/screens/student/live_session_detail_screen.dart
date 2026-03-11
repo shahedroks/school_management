@@ -10,9 +10,15 @@ import 'package:high_school/domain/repositories/live_sessions_repository.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
 
 class LiveSessionDetailScreen extends StatelessWidget {
-  const LiveSessionDetailScreen({super.key, required this.sessionId});
+  const LiveSessionDetailScreen({
+    super.key,
+    required this.sessionId,
+    this.passedSession,
+  });
 
   final String sessionId;
+  /// When provided (e.g. from dashboard), use this instead of looking up by sessionId in repo.
+  final LiveSessionEntity? passedSession;
 
   static String _formatSessionDate(String dateStr) {
     try {
@@ -34,13 +40,25 @@ class LiveSessionDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
 
+    if (passedSession != null) {
+      final s = passedSession!;
+      final platformStr =
+          s.platform == LiveSessionPlatform.zoom ? 'Zoom' : 'Google Meet';
+      final formattedDate = _formatSessionDate(s.date);
+      final classDisplayName = s.classId.isNotEmpty ? s.classId : '-';
+      return _buildContent(context, lang: lang, session: s,
+          classDisplayName: classDisplayName, formattedDate: formattedDate,
+          platformStr: platformStr);
+    }
+
     return FutureBuilder(
       future: Future.wait([
         context.read<LiveSessionsRepository>().getLiveSessions(),
         context.read<ClassesRepository>().getClasses(),
       ]),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snapshot.hasData)
+          return const Center(child: CircularProgressIndicator());
         final sessions = (snapshot.data![0] as List).cast<LiveSessionEntity>();
         final classes = (snapshot.data![1] as List).cast<ClassEntity>();
         LiveSessionEntity? session;
@@ -73,10 +91,27 @@ class LiveSessionDetailScreen extends StatelessWidget {
         }
 
         final s = session;
-        final platformStr = s.platform == LiveSessionPlatform.zoom ? 'Zoom' : 'Google Meet';
+        final platformStr =
+            s.platform == LiveSessionPlatform.zoom ? 'Zoom' : 'Google Meet';
         final formattedDate = _formatSessionDate(s.date);
+        final classDisplayName = classData?.name ?? '-';
+        return _buildContent(context, lang: lang, session: s,
+            classDisplayName: classDisplayName, formattedDate: formattedDate,
+            platformStr: platformStr);
+      },
+    );
+  }
 
-        return SingleChildScrollView(
+  Widget _buildContent(
+    BuildContext context, {
+    required LanguageProvider lang,
+    required LiveSessionEntity session,
+    required String classDisplayName,
+    required String formattedDate,
+    required String platformStr,
+  }) {
+    final s = session;
+    return SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +119,8 @@ class LiveSessionDetailScreen extends StatelessWidget {
               // Header – match React (primary blue)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
                   color: AppTheme.primary,
                   borderRadius: BorderRadius.circular(12),
@@ -126,24 +162,28 @@ class LiveSessionDetailScreen extends StatelessWidget {
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: AppTheme.accent.withValues(alpha: 0.4), width: 2),
+                  side: BorderSide(
+                      color: AppTheme.accent.withValues(alpha: 0.4), width: 2),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         color: AppTheme.accent.withValues(alpha: 0.06),
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(10)),
                       ),
                       child: Text(
                         s.title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.primary,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.primary,
+                                ),
                       ),
                     ),
                     Padding(
@@ -153,12 +193,14 @@ class LiveSessionDetailScreen extends StatelessWidget {
                         children: [
                           _DetailRow(
                             label: lang.t('classes.classDetails').toUpperCase(),
-                            value: classData?.name ?? '-',
+                            value: classDisplayName,
                             accentColor: AppTheme.accent,
                           ),
                           const SizedBox(height: 12),
                           _DetailRow(
-                            label: '${lang.t('live.sessionDate')} & ${lang.t('live.sessionTime')}'.toUpperCase(),
+                            label:
+                                '${lang.t('live.sessionDate')} & ${lang.t('live.sessionTime')}'
+                                    .toUpperCase(),
                             value: '$formattedDate\n${s.time}',
                             accentColor: AppTheme.accent,
                           ),
@@ -193,7 +235,10 @@ class LiveSessionDetailScreen extends StatelessWidget {
                             ),
                             child: Column(
                               children: [
-                                Icon(Icons.video_call, size: 48, color: Colors.white.withValues(alpha: 0.95)),
+                                Icon(Icons.video_call,
+                                    size: 48,
+                                    color:
+                                        Colors.white.withValues(alpha: 0.95)),
                                 const SizedBox(height: 12),
                                 Text(
                                   'Ready to Join?',
@@ -216,24 +261,63 @@ class LiveSessionDetailScreen extends StatelessWidget {
                                   width: double.infinity,
                                   child: OutlinedButton.icon(
                                     onPressed: () async {
-                                      final uri = Uri.tryParse(s.link);
-                                      if (uri != null && await canLaunchUrl(uri)) {
-                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                      } else {
+                                      final zoomLink = s.link.trim();
+                                      if (zoomLink.isEmpty) {
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text(lang.t('live.meetingLink'))),
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(lang
+                                                    .t('live.meetingLink'))),
+                                          );
+                                        }
+                                        return;
+                                      }
+                                      final uri = Uri.tryParse(zoomLink);
+                                      if (uri == null) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(lang
+                                                    .t('live.meetingLink'))),
+                                          );
+                                        }
+                                        return;
+                                      }
+                                      try {
+                                        final launched = await launchUrl(uri,
+                                            mode: LaunchMode
+                                                .externalApplication);
+                                        if (!launched && context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(lang
+                                                    .t('live.meetingLink'))),
+                                          );
+                                        }
+                                      } catch (_) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(lang
+                                                    .t('live.meetingLink'))),
                                           );
                                         }
                                       }
                                     },
-                                    icon: const Icon(Icons.open_in_new, size: 18),
+                                    icon:
+                                        const Icon(Icons.open_in_new, size: 18),
                                     label: Text(lang.t('live.joinSession')),
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: AppTheme.accent,
-                                      side: const BorderSide(color: AppTheme.accent, width: 2),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      side: const BorderSide(
+                                          color: AppTheme.accent, width: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
                                     ),
                                   ),
                                 ),
@@ -254,7 +338,10 @@ class LiveSessionDetailScreen extends StatelessWidget {
                               children: [
                                 Text(
                                   'Session Guidelines',
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall
+                                      ?.copyWith(
                                         fontWeight: FontWeight.w600,
                                         color: AppTheme.primary,
                                       ),
@@ -262,7 +349,10 @@ class LiveSessionDetailScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   '• Join 5 minutes before the session starts\n• Keep your microphone muted when not speaking\n• Use the chat for questions\n• Have your notebook ready',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700, height: 1.5),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                      height: 1.5),
                                 ),
                               ],
                             ),
@@ -277,8 +367,6 @@ class LiveSessionDetailScreen extends StatelessWidget {
             ],
           ),
         );
-      },
-    );
   }
 }
 

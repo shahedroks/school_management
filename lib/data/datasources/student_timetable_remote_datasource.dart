@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:high_school/core/constants/app_constants.dart';
+import 'package:high_school/core/network/api_response_helper.dart';
 import 'package:high_school/domain/entities/timetable_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,7 +43,13 @@ class StudentTimetableRemoteDatasource {
       },
     );
     if (response.statusCode != 200) return const _TimetableApiResult([], null);
-    return _parse(response.body);
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map<String, dynamic>) ensureAuthorized(decoded);
+      return _parse(response.body);
+    } on UnauthorizedApiException {
+      return const _TimetableApiResult([], null);
+    }
   }
 
   /// Parses API response: { success?, data: { today?, groupedByDay: { sun: [], mon: [], ... } } }.
@@ -113,6 +120,8 @@ class StudentTimetableRemoteDatasource {
       });
 
       return _TimetableApiResult(entries, todayKey);
+    } on UnauthorizedApiException {
+      rethrow;
     } catch (_) {
       return const _TimetableApiResult([], null);
     }

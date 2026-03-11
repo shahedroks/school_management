@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:high_school/core/constants/app_constants.dart';
+import 'package:high_school/core/network/api_response_helper.dart';
 import 'package:high_school/domain/entities/class_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,7 +32,11 @@ class TeacherClassesRemoteDatasource {
       },
     );
     if (response.statusCode != 200) return [];
-    return _parseList(response.body);
+    try {
+      return _parseList(response.body);
+    } on UnauthorizedApiException {
+      return [];
+    }
   }
 
   Future<ClassEntity?> getClassById(String classId) async {
@@ -48,12 +53,19 @@ class TeacherClassesRemoteDatasource {
       },
     );
     if (response.statusCode != 200) return null;
-    return _parseOne(response.body);
+    try {
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>?;
+      ensureAuthorized(decoded);
+      return _parseOne(response.body);
+    } on UnauthorizedApiException {
+      return null;
+    }
   }
 
   List<ClassEntity> _parseList(String body) {
     try {
       final decoded = jsonDecode(body) as Map<String, dynamic>?;
+      ensureAuthorized(decoded);
       if (decoded == null) return [];
       final data = decoded['data'];
       if (data is! List) return [];
@@ -61,6 +73,8 @@ class TeacherClassesRemoteDatasource {
           .map((e) => _itemToEntity(e is Map<String, dynamic> ? e : Map<String, dynamic>.from(e as Map)))
           .whereType<ClassEntity>()
           .toList();
+    } on UnauthorizedApiException {
+      return [];
     } catch (_) {
       return [];
     }
