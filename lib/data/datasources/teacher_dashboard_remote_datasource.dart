@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:high_school/core/constants/app_constants.dart';
 import 'package:high_school/core/network/api_response_helper.dart';
-import 'package:high_school/domain/entities/student_dashboard_entity.dart';
+import 'package:high_school/domain/entities/teacher_dashboard_entity.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class StudentDashboardRemoteDatasource {
-  StudentDashboardRemoteDatasource(this._prefs) : _baseUrl = AppConstants.apiBaseUrl;
+/// Remote datasource for GET /teachers/dashboard.
+class TeacherDashboardRemoteDatasource {
+  TeacherDashboardRemoteDatasource(this._prefs)
+      : _baseUrl = AppConstants.apiBaseUrl;
 
   final SharedPreferences _prefs;
   final String _baseUrl;
@@ -16,11 +18,12 @@ class StudentDashboardRemoteDatasource {
 
   bool get isConfigured => _baseUrl.isNotEmpty;
 
-  Future<StudentDashboardEntity?> getDashboard() async {
+  Future<TeacherDashboardEntity?> getDashboard() async {
     if (!isConfigured) return null;
     final token = _prefs.getString(AppConstants.sessionTokenKey);
     if (token == null || token.isEmpty) return null;
-    final uri = Uri.parse('$_apiBase/students/dashboard');
+
+    final uri = Uri.parse('$_apiBase/teachers/dashboard');
     final response = await http.get(
       uri,
       headers: {
@@ -38,14 +41,16 @@ class StudentDashboardRemoteDatasource {
     }
   }
 
-  StudentDashboardEntity? _parse(String body) {
+  TeacherDashboardEntity? _parse(String body) {
     try {
       final decoded = jsonDecode(body) as Map<String, dynamic>?;
       if (decoded == null) return null;
       final data = decoded['data'];
       if (data == null) return null;
-      final map = data is Map<String, dynamic> ? data : Map<String, dynamic>.from(data as Map);
-      return StudentDashboardEntity.fromJson(map);
+      final map = data is Map<String, dynamic>
+          ? data
+          : Map<String, dynamic>.from(data as Map);
+      return TeacherDashboardEntity.fromJson(map);
     } on UnauthorizedApiException {
       rethrow;
     } catch (_) {

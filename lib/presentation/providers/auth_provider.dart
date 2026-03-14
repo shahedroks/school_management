@@ -46,12 +46,27 @@ class AuthProvider with ChangeNotifier {
     required String role,
     String? grade,
     String? subject,
+    String? subjectId,
     List<String>? assignedSubjectIds,
     List<String>? assignedSubjects,
+    List<String>? assignedGradeIds,
+    List<String>? assignedGrades,
   }) async {
     lastAuthError = null;
     try {
-      final ok = await _authRepository.register(name: name, phone: phone, pin: pin, role: role, grade: grade, subject: subject, assignedSubjectIds: assignedSubjectIds, assignedSubjects: assignedSubjects);
+      final ok = await _authRepository.register(
+        name: name,
+        phone: phone,
+        pin: pin,
+        role: role,
+        grade: grade,
+        subject: subject,
+        subjectId: subjectId,
+        assignedSubjectIds: assignedSubjectIds,
+        assignedSubjects: assignedSubjects,
+        assignedGradeIds: assignedGradeIds,
+        assignedGrades: assignedGrades,
+      );
       if (ok) notifyListeners();
       return ok;
     } on AuthApiException catch (e) {

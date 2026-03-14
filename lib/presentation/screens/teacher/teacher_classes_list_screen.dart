@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:high_school/core/theme/app_theme.dart';
 import 'package:high_school/domain/entities/class_entity.dart';
-import 'package:high_school/domain/repositories/classes_repository.dart';
+import 'package:high_school/domain/repositories/teacher_classes_repository.dart';
 import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
 
@@ -28,7 +28,7 @@ class _TeacherClassesListScreenState extends State<TeacherClassesListScreen> {
         : (auth.user?.id ?? 'teacher1');
 
     return FutureBuilder<List<ClassEntity>>(
-      future: context.read<ClassesRepository>().getClassesByTeacher(teacherId),
+      future: context.read<TeacherClassesRepository>().getMyClasses(teacherId),
       builder: (context, snapshot) {
         if (!snapshot.hasData)
           return const Center(child: CircularProgressIndicator());

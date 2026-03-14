@@ -1,0 +1,684 @@
+{
+  "info": {
+    "name": "High School Management API",
+    "description": "All endpoints from API_DOCUMENTATION.md",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://103.208.181.235:5005" },
+    { "key": "token", "value": "" },
+    { "key": "admin_token", "value": "" },
+    { "key": "teacher_token", "value": "" },
+    { "key": "student_token", "value": "" },
+    { "key": "grade_id", "value": "" },
+    { "key": "subject_id", "value": "" },
+    { "key": "class_id", "value": "" },
+    { "key": "lesson_id", "value": "" },
+    { "key": "assignment_id", "value": "" },
+    { "key": "session_id", "value": "" },
+    { "key": "student_id", "value": "" },
+    { "key": "submission_id", "value": "" },
+    { "key": "user_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Base & Health",
+      "item": [
+        {
+          "name": "GET Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/health",
+            "description": "API health check"
+          }
+        },
+        {
+          "name": "GET Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/",
+            "description": "Root ping"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST Register (Student)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"student\",\n  \"name\": \"Fatima Ahmed\",\n  \"phone\": \"24587569\",\n  \"pin\": \"1234\",\n  \"confirmPin\": \"1234\",\n  \"gradeId\": \"{{grade_id}}\",\n  \"assignedSubjectIds\": [\"{{subject_id}}\"]\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/register",
+            "description": "Create student account"
+          }
+        },
+        {
+          "name": "POST Register (Teacher)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"teacher\",\n  \"name\": \"Mohammed Ould\",\n  \"phone\": \"34587569\",\n  \"pin\": \"1234\",\n  \"confirmPin\": \"1234\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"assignedGradeIds\": [\"{{grade_id}}\"]\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/register",
+            "description": "Create teacher account"
+          }
+        },
+        {
+          "name": "POST Login",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"24587569\",\n  \"pin\": \"1234\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login",
+            "description": "Login; save data.token to {{token}}"
+          }
+        },
+        {
+          "name": "POST OTP Send",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"33445566\"\n}" },
+            "url": "{{base_url}}/api/v1/otp/send"
+          }
+        },
+        {
+          "name": "POST OTP Verify",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"33445566\",\n  \"otp\": \"4821\"\n}" },
+            "url": "{{base_url}}/api/v1/otp/verify"
+          }
+        },
+        {
+          "name": "POST OTP Resend",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"33445566\"\n}" },
+            "url": "{{base_url}}/api/v1/otp/resend"
+          }
+        },
+        {
+          "name": "GET SMS Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/sms/statistics"
+          }
+        },
+        {
+          "name": "GET Auth Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/auth/me",
+            "description": "Requires Authorization: Bearer {{token}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student",
+      "item": [
+        {
+          "name": "Dashboard",
+          "item": [
+            {
+              "name": "GET Students Dashboard",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/v1/students/dashboard",
+                "description": "Student home dashboard"
+              }
+            },
+            {
+              "name": "GET Students Progress Overview",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/v1/students/progress/overview"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Classes",
+          "item": [
+            {
+              "name": "GET Students Student Classes",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/v1/students/student/classes"
+              }
+            },
+            {
+              "name": "GET Classes Student My",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/v1/classes/student/my"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Timetable",
+          "item": [
+            {
+              "name": "GET Students Timetable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/v1/students/timetable"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Live Sessions",
+          "item": [
+            { "name": "GET Sessions Student", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/sessions/student" } },
+            { "name": "GET Sessions Student by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/sessions/student/{{session_id}}" } },
+            { "name": "GET Sessions by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/sessions/{{session_id}}" } },
+            {
+              "name": "POST Sessions Join",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{}" },
+                "url": "{{base_url}}/api/v1/sessions/{{session_id}}/join"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assignments",
+          "item": [
+            { "name": "GET Assignments Student My", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/assignments/student/my" } },
+            { "name": "GET Assignments Scope", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/assignments/scope?gradeId={{grade_id}}&subjectId={{subject_id}}" } },
+            { "name": "GET Assignment by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/assignments/{{assignment_id}}" } }
+          ]
+        },
+        {
+          "name": "Submit Assignment",
+          "item": [
+            {
+              "name": "POST Submission Submit",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "file", "type": "file", "src": "" },
+                    { "key": "textAnswer", "value": "My written response...", "type": "text" }
+                  ]
+                },
+                "url": "{{base_url}}/api/v1/submission/{{assignment_id}}/submit"
+              }
+            },
+            {
+              "name": "GET Submission Me",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{base_url}}/api/v1/submission/assignments/{{assignment_id}}/submission/me"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lessons",
+          "item": [
+            { "name": "GET Lesson Scope", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/lesson/scope?gradeId={{grade_id}}&subjectId={{subject_id}}" } },
+            { "name": "GET Lesson by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/lesson/{{lesson_id}}" } }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Teacher",
+      "item": [
+        {
+          "name": "GET Teachers Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/v1/teachers/dashboard"
+          }
+        },
+        {
+          "name": "Classes",
+          "item": [
+            { "name": "GET Classes My", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/classes/my" } },
+            { "name": "GET Class by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/classes/{{class_id}}" } }
+          ]
+        },
+        {
+          "name": "Students",
+          "item": [
+            { "name": "GET Teachers Students", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/teachers/students?search=" } },
+            { "name": "GET Teachers Stats Students", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/teachers/stats/students?subject=&gradeLevel=&search=" } },
+            { "name": "GET Student Progress", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/teachers/students/{{student_id}}/progress?classId={{class_id}}" } },
+            { "name": "GET Student Attendance", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/teachers/students/{{student_id}}/attendance?classId={{class_id}}" } },
+            {
+              "name": "POST Student Attendance",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"classId\": \"{{class_id}}\",\n  \"status\": \"Present\",\n  \"date\": \"2026-02-24\"\n}"
+                },
+                "url": "{{base_url}}/api/v1/teachers/students/{{student_id}}/attendance"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lessons",
+          "item": [
+            {
+              "name": "POST Lesson",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "title", "value": "Introduction to Algebra", "type": "text" },
+                    { "key": "description", "value": "Basic algebra concepts", "type": "text" },
+                    { "key": "contentType", "value": "text", "type": "text" },
+                    { "key": "chapter", "value": "Chapter 1", "type": "text" },
+                    { "key": "status", "value": "published", "type": "text" },
+                    { "key": "gradeId", "value": "{{grade_id}}", "type": "text" },
+                    { "key": "subjectId", "value": "{{subject_id}}", "type": "text" },
+                    { "key": "classId", "value": "{{class_id}}", "type": "text" },
+                    { "key": "files", "type": "file", "src": "" }
+                  ]
+                },
+                "url": "{{base_url}}/api/v1/lesson"
+              }
+            },
+            { "name": "PATCH Lesson", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/lesson/{{lesson_id}}" } },
+            { "name": "DELETE Lesson", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/lesson/{{lesson_id}}" } }
+          ]
+        },
+        {
+          "name": "Assignments",
+          "item": [
+            {
+              "name": "POST Assignments",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "title", "value": "Quadratic Equations Worksheet", "type": "text" },
+                    { "key": "description", "value": "Solve problems 1-20", "type": "text" },
+                    { "key": "dueDate", "value": "2026-02-27", "type": "text" },
+                    { "key": "dueTime", "value": "10:00", "type": "text" },
+                    { "key": "points", "value": "100", "type": "text" },
+                    { "key": "gradeId", "value": "{{grade_id}}", "type": "text" },
+                    { "key": "subjectId", "value": "{{subject_id}}", "type": "text" },
+                    { "key": "classId", "value": "{{class_id}}", "type": "text" },
+                    { "key": "file", "type": "file", "src": "" }
+                  ]
+                },
+                "url": "{{base_url}}/api/v1/assignments"
+              }
+            },
+            { "name": "PATCH Assignment", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/assignments/{{assignment_id}}" } },
+            { "name": "DELETE Assignment", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/assignments/{{assignment_id}}" } },
+            { "name": "GET Assignment Submissions", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/assignments/{{assignment_id}}/submissions" } }
+          ]
+        },
+        {
+          "name": "Grade Submission",
+          "item": [
+            {
+              "name": "PATCH Grade Submission",
+              "request": {
+                "method": "PATCH",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"score\": 90,\n  \"feedback\": \"Good work\"\n}" },
+                "url": "{{base_url}}/api/v1/submission/submissions/{{submission_id}}/grade"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Live Sessions",
+          "item": [
+            {
+              "name": "POST Sessions",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Mathematics Q&A Session\",\n  \"gradeId\": \"{{grade_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"classId\": \"{{class_id}}\",\n  \"className\": \"5th Grade - Math A\",\n  \"date\": \"2026-02-25\",\n  \"time\": \"10:00\",\n  \"duration\": 60,\n  \"zoomLink\": \"https://zoom.us/j/12345678901\"\n}"
+                },
+                "url": "{{base_url}}/api/v1/sessions"
+              }
+            },
+            { "name": "GET Sessions Teacher", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/sessions/teacher" } },
+            { "name": "GET Sessions Teacher by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/sessions/teacher/{{session_id}}" } },
+            { "name": "PUT Session", "request": { "method": "PUT", "header": [], "url": "{{base_url}}/api/v1/sessions/{{session_id}}" } },
+            { "name": "PUT Session Complete", "request": { "method": "PUT", "header": [], "url": "{{base_url}}/api/v1/sessions/{{session_id}}/complete" } },
+            { "name": "DELETE Session", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/sessions/{{session_id}}" } }
+          ]
+        },
+        {
+          "name": "Attendance",
+          "item": [
+            {
+              "name": "POST Attendance Class",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\": \"2026-02-24\",\n  \"records\": [\n    { \"studentId\": \"{{student_id}}\", \"status\": \"Present\", \"notes\": \"On time\" }\n  ]\n}"
+                },
+                "url": "{{base_url}}/api/v1/attendance/classes/{{class_id}}"
+              }
+            },
+            { "name": "GET Attendance Class", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/attendance/classes/{{class_id}}?from=&to=" } },
+            { "name": "GET Attendance Student Summary", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/attendance/students/{{student_id}}/summary?from=&to=" } }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Dashboard",
+          "item": [
+            { "name": "GET Dashboard Overview", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/dashboard/overview" } }
+          ]
+        },
+        {
+          "name": "Users",
+          "item": [
+            { "name": "GET Users Stats", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/users/stats" } },
+            { "name": "GET Users", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/users" } },
+            {
+              "name": "POST Users",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"teacher\",\n  \"name\": \"John Smith\",\n  \"phone\": \"39876543\",\n  \"pin\": \"1234\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"assignedGradeIds\": [\"{{grade_id}}\"]\n}"
+                },
+                "url": "{{base_url}}/api/v1/admin/users"
+              }
+            },
+            { "name": "PATCH User Status", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/users/{{user_id}}/status" } },
+            { "name": "PATCH User", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/users/{{user_id}}" } },
+            { "name": "DELETE User", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/admin/users/{{user_id}}" } }
+          ]
+        },
+        {
+          "name": "Classes",
+          "item": [
+            { "name": "GET Classes", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/classes?page=1&limit=20" } },
+            {
+              "name": "POST Classes",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"subjectId\": \"{{subject_id}}\",\n  \"gradeId\": \"{{grade_id}}\",\n  \"teacherId\": \"{{user_id}}\",\n  \"students\": [],\n  \"maxStudents\": 35,\n  \"status\": \"active\",\n  \"schedule\": [ { \"day\": \"mon\", \"startMin\": 540, \"endMin\": 600 } ]\n}"
+                },
+                "url": "{{base_url}}/api/v1/admin/classes"
+              }
+            },
+            { "name": "PATCH Class", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/classes/{{class_id}}" } },
+            { "name": "DELETE Class", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/admin/classes/{{class_id}}" } },
+            { "name": "GET Subjects Summary", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/subjects/summary" } },
+            { "name": "GET Grades Sections", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/grades/sections" } },
+            { "name": "GET Content Stats", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/content/stats" } }
+          ]
+        },
+        {
+          "name": "Lessons",
+          "item": [
+            { "name": "GET Lessons Meta", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/lessons/meta" } },
+            { "name": "GET Lessons", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/lessons?page=1&limit=20&status=all&contentType=all" } },
+            { "name": "GET Lesson by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/lessons/{{lesson_id}}" } },
+            { "name": "PATCH Lesson", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/lessons/{{lesson_id}}" } },
+            { "name": "DELETE Lesson", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/admin/lessons/{{lesson_id}}" } }
+          ]
+        },
+        {
+          "name": "Assignments",
+          "item": [
+            { "name": "GET Assignments Stats", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/assignments/stats" } },
+            { "name": "GET Assignments", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/assignments" } },
+            {
+              "name": "POST Assignments",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    { "key": "classId", "value": "{{class_id}}", "type": "text" },
+                    { "key": "title", "value": "Chapter 5 Homework", "type": "text" },
+                    { "key": "description", "value": "Complete all exercises", "type": "text" },
+                    { "key": "dueDate", "value": "2026-02-28", "type": "text" },
+                    { "key": "dueTime", "value": "12:00", "type": "text" },
+                    { "key": "points", "value": "100", "type": "text" },
+                    { "key": "status", "value": "active", "type": "text" },
+                    { "key": "files", "type": "file", "src": "" }
+                  ]
+                },
+                "url": "{{base_url}}/api/v1/admin/assignments"
+              }
+            },
+            { "name": "PATCH Assignment", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/assignments/{{assignment_id}}" } },
+            { "name": "GET Assignment Submissions", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/assignments/{{assignment_id}}/submissions" } }
+          ]
+        },
+        {
+          "name": "Live Sessions",
+          "item": [
+            { "name": "GET Live Sessions Stats", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/live-sessions/stats" } },
+            { "name": "GET Live Sessions", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/live-sessions" } },
+            {
+              "name": "POST Live Session",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"teacherId\": \"{{user_id}}\",\n  \"title\": \"Algebra Live Session\",\n  \"gradeId\": \"{{grade_id}}\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"classId\": \"{{class_id}}\",\n  \"className\": \"5th Grade - Math A\",\n  \"date\": \"2026-02-26\",\n  \"time\": \"09:00\",\n  \"duration\": 60,\n  \"zoomLink\": \"https://zoom.us/j/12345678901\"\n}"
+                },
+                "url": "{{base_url}}/api/v1/admin/live-sessions"
+              }
+            },
+            { "name": "PATCH Live Session", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/live-sessions/{{session_id}}" } },
+            { "name": "PATCH Live Session Approve", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/live-sessions/{{session_id}}/approve" } },
+            { "name": "PATCH Live Session Reject", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/live-sessions/{{session_id}}/reject" } },
+            { "name": "DELETE Live Session", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/admin/live-sessions/{{session_id}}" } }
+          ]
+        },
+        {
+          "name": "Timetable",
+          "item": [
+            { "name": "GET Timetable Meta", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/timetable/meta" } },
+            { "name": "GET Timetable", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/timetable" } },
+            {
+              "name": "POST Timetable Entry",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"class\",\n  \"gradeId\": \"{{grade_id}}\",\n  \"section\": \"A\",\n  \"subjectId\": \"{{subject_id}}\",\n  \"teacherId\": \"{{user_id}}\",\n  \"classId\": \"{{class_id}}\",\n  \"room\": \"Room 101\",\n  \"day\": \"mon\",\n  \"startMin\": 540,\n  \"endMin\": 600,\n  \"isActive\": true\n}"
+                },
+                "url": "{{base_url}}/api/v1/admin/timetable/entries"
+              }
+            },
+            { "name": "PATCH Timetable Entry", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/timetable/entries/{{lesson_id}}" } },
+            { "name": "DELETE Timetable Entry", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/admin/timetable/entries/{{lesson_id}}" } }
+          ]
+        },
+        {
+          "name": "Notifications",
+          "item": [
+            { "name": "GET Notifications Stats", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/notifications/stats" } },
+            { "name": "GET Notification Stats", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/notifications/{{user_id}}/stats" } },
+            { "name": "GET Notifications", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/notifications" } },
+            {
+              "name": "POST Notification",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Exam Schedule Update\",\n  \"message\": \"Midterm exams start next week.\",\n  \"channel\": \"announcement\",\n  \"priority\": \"high\",\n  \"targetType\": \"roles\",\n  \"target\": { \"roles\": [\"student\", \"teacher\"] },\n  \"action\": \"send_now\"\n}"
+                },
+                "url": "{{base_url}}/api/v1/admin/notifications"
+              }
+            },
+            { "name": "PATCH Notification", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/notifications/{{user_id}}" } }
+          ]
+        },
+        {
+          "name": "Settings",
+          "item": [
+            { "name": "GET Settings Subjects Grades", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/settings/subjects-grades" } },
+            { "name": "GET Settings", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/settings" } },
+            { "name": "PATCH Settings General", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/settings/general" } },
+            { "name": "PATCH Settings Theme", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/settings/theme" } },
+            { "name": "PATCH Settings Security", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/admin/settings/security" } }
+          ]
+        },
+        {
+          "name": "Analytics",
+          "item": [
+            { "name": "GET Analytics Overview", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/analytics/overview?from=&to=" } },
+            { "name": "GET Analytics Student Progress", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/analytics/student-progress?from=&to=" } },
+            { "name": "GET Analytics Teacher Activity", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/admin/analytics/teacher-activity?from=&to=" } }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Core (Users, Classes, Profiles, etc.)",
+      "item": [
+        {
+          "name": "Users",
+          "item": [
+            { "name": "POST Users", "request": { "method": "POST", "header": [ { "key": "Content-Type", "value": "application/json" } ], "body": { "mode": "raw", "raw": "{\n  \"role\": \"student\",\n  \"name\": \"Mariam Ould\",\n  \"phone\": \"24567890\",\n  \"pin\": \"1234\",\n  \"gradeId\": \"{{grade_id}}\",\n  \"assignedSubjectIds\": [\"{{subject_id}}\"]\n}" }, "url": "{{base_url}}/api/v1/users" } },
+            { "name": "GET Users Me", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/users/me" } },
+            { "name": "GET Users", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/users" } },
+            { "name": "GET User by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/users/{{user_id}}" } },
+            { "name": "PATCH User Assigned Subjects", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/users/{{user_id}}/assigned-subjects" } },
+            { "name": "PATCH User", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/users/{{user_id}}" } },
+            { "name": "DELETE User", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/users/{{user_id}}" } }
+          ]
+        },
+        {
+          "name": "Classes",
+          "item": [
+            {
+              "name": "POST Classes",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"subjectId\": \"{{subject_id}}\",\n  \"gradeId\": \"{{grade_id}}\",\n  \"teacherId\": \"{{user_id}}\",\n  \"maxStudents\": 30,\n  \"status\": \"active\",\n  \"schedule\": [ { \"day\": \"mon\", \"startMin\": 540, \"endMin\": 600 } ]\n}"
+                },
+                "url": "{{base_url}}/api/v1/classes"
+              }
+            },
+            { "name": "GET Classes Admin", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/classes/admin" } },
+            { "name": "PATCH Class Schedule", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/classes/{{class_id}}/schedule" } },
+            { "name": "PUT Class Schedule", "request": { "method": "PUT", "header": [], "url": "{{base_url}}/api/v1/classes/{{class_id}}/schedule" } }
+          ]
+        },
+        {
+          "name": "Profiles",
+          "item": [
+            { "name": "POST Profiles", "request": { "method": "POST", "header": [], "body": { "mode": "formdata", "formdata": [] }, "url": "{{base_url}}/api/v1/profiles" } },
+            { "name": "POST Profiles by UserId", "request": { "method": "POST", "header": [], "url": "{{base_url}}/api/v1/profiles/{{user_id}}" } },
+            { "name": "GET Profiles Me", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/profiles/me" } },
+            { "name": "PATCH Profiles Me", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/profiles/me" } },
+            { "name": "DELETE Profiles Me", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/profiles/me" } },
+            { "name": "GET Profiles", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/profiles" } },
+            { "name": "GET Profile by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/profiles/{{user_id}}" } },
+            { "name": "PATCH Profile", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/profiles/{{user_id}}" } },
+            { "name": "DELETE Profile", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/profiles/{{user_id}}" } }
+          ]
+        },
+        {
+          "name": "Subjects",
+          "item": [
+            { "name": "GET Subjects", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/subjects" } },
+            { "name": "GET Subject by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/subjects/{{subject_id}}" } },
+            {
+              "name": "POST Subjects",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Mathematics\",\n  \"code\": \"MATH\",\n  \"description\": \"Mathematics subject\",\n  \"color\": \"#1f3c88\"\n}" },
+                "url": "{{base_url}}/api/v1/subjects"
+              }
+            },
+            { "name": "PATCH Subject", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/subjects/{{subject_id}}" } },
+            { "name": "DELETE Subject", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/subjects/{{subject_id}}" } }
+          ]
+        },
+        {
+          "name": "Grades",
+          "item": [
+            { "name": "GET Grades", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/grades" } },
+            { "name": "GET Grade by Id", "request": { "method": "GET", "header": [], "url": "{{base_url}}/api/v1/grades/{{grade_id}}" } },
+            {
+              "name": "POST Grades",
+              "request": {
+                "method": "POST",
+                "header": [ { "key": "Content-Type", "value": "application/json" } ],
+                "body": { "mode": "raw", "raw": "{\n  \"label\": \"5th\"\n}" },
+                "url": "{{base_url}}/api/v1/grades"
+              }
+            },
+            { "name": "PATCH Grade", "request": { "method": "PATCH", "header": [], "url": "{{base_url}}/api/v1/grades/{{grade_id}}" } },
+            { "name": "DELETE Grade", "request": { "method": "DELETE", "header": [], "url": "{{base_url}}/api/v1/grades/{{grade_id}}" } }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -8,9 +8,15 @@ import 'package:high_school/domain/repositories/classes_repository.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
 
 class AssignmentDetailsScreen extends StatefulWidget {
-  const AssignmentDetailsScreen({super.key, required this.assignmentId});
+  const AssignmentDetailsScreen({
+    super.key,
+    required this.assignmentId,
+    this.passedAssignment,
+  });
 
   final String assignmentId;
+  /// When provided (e.g. from dashboard API), use this instead of fetching by id.
+  final AssignmentEntity? passedAssignment;
 
   @override
   State<AssignmentDetailsScreen> createState() => _AssignmentDetailsScreenState();
@@ -51,6 +57,22 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
 
+    if (widget.passedAssignment != null) {
+      final a = widget.passedAssignment!;
+      return FutureBuilder<List<ClassEntity>>(
+        future: context.read<ClassesRepository>().getClasses(),
+        builder: (context, snapshot) {
+          ClassEntity? classData;
+          if (snapshot.hasData) {
+            try {
+              classData = snapshot.data!.firstWhere((c) => c.id == a.classId);
+            } catch (_) {}
+          }
+          return _buildContent(context, lang: lang, a: a, classData: classData);
+        },
+      );
+    }
+
     return FutureBuilder(
       future: Future.wait([
         context.read<AssignmentsRepository>().getAssignmentById(widget.assignmentId),
@@ -67,13 +89,24 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
           classData = classes.firstWhere((c) => c.id == a.classId);
         } catch (_) {}
 
-        final daysUntilDue = _daysUntilDue(a.dueDate);
-        final isOverdue = daysUntilDue < 0;
-        final isUrgent = daysUntilDue <= 2 && daysUntilDue >= 0;
-        final currentStatus = _submitted ? AssignmentStatus.submitted : a.status;
-        final isPending = currentStatus == AssignmentStatus.pending;
+        return _buildContent(context, lang: lang, a: a, classData: classData);
+      },
+    );
+  }
 
-        return SingleChildScrollView(
+  Widget _buildContent(
+    BuildContext context, {
+    required LanguageProvider lang,
+    required AssignmentEntity a,
+    ClassEntity? classData,
+  }) {
+    final daysUntilDue = _daysUntilDue(a.dueDate);
+    final isOverdue = daysUntilDue < 0;
+    final isUrgent = daysUntilDue <= 2 && daysUntilDue >= 0;
+    final currentStatus = _submitted ? AssignmentStatus.submitted : a.status;
+    final isPending = currentStatus == AssignmentStatus.pending;
+
+    return SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,8 +132,6 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
               const SizedBox(height: 24),
             ],
           ),
-        );
-      },
     );
   }
 

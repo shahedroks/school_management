@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:high_school/core/constants/app_constants.dart';
+import 'package:high_school/core/network/api_response_helper.dart';
 import 'package:high_school/domain/entities/student_class_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +31,13 @@ class StudentClassesRemoteDatasource {
       },
     );
     if (response.statusCode != 200) return [];
-    return _parseList(response.body);
+    try {
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>?;
+      ensureAuthorized(decoded);
+      return _parseList(response.body);
+    } on UnauthorizedApiException {
+      return [];
+    }
   }
 
   List<StudentClassItem> _parseList(String body) {

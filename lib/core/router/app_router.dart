@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:high_school/core/constants/app_constants.dart';
 import 'package:high_school/domain/entities/user_entity.dart';
+import 'package:high_school/domain/entities/live_session_entity.dart';
+import 'package:high_school/domain/entities/assignment_entity.dart';
 import 'package:high_school/presentation/providers/auth_provider.dart';
 import 'package:high_school/presentation/screens/auth/language_selection_screen.dart';
 import 'package:high_school/presentation/screens/auth/login_screen.dart';
@@ -114,9 +116,18 @@ class AppRouter {
         ),
         GoRoute(
           path: '/student/assignments/:assignmentId',
-          builder: (_, state) => LayoutWidget(
-            child: AssignmentDetailsScreen(assignmentId: state.pathParameters['assignmentId']!),
-          ),
+          builder: (_, state) {
+            final assignmentId = state.pathParameters['assignmentId']!;
+            final passedAssignment = state.extra is AssignmentEntity
+                ? state.extra as AssignmentEntity
+                : null;
+            return LayoutWidget(
+              child: AssignmentDetailsScreen(
+                assignmentId: assignmentId,
+                passedAssignment: passedAssignment,
+              ),
+            );
+          },
         ),
         GoRoute(
           path: '/student/timetable',
@@ -128,9 +139,18 @@ class AppRouter {
         ),
         GoRoute(
           path: '/student/live-sessions/:sessionId',
-          builder: (_, state) => LayoutWidget(
-            child: LiveSessionDetailScreen(sessionId: state.pathParameters['sessionId']!),
-          ),
+          builder: (_, state) {
+            final sessionId = state.pathParameters['sessionId']!;
+            final passedSession = state.extra is LiveSessionEntity
+                ? state.extra as LiveSessionEntity
+                : null;
+            return LayoutWidget(
+              child: LiveSessionDetailScreen(
+                sessionId: sessionId,
+                passedSession: passedSession,
+              ),
+            );
+          },
         ),
         GoRoute(
           path: '/student/profile',

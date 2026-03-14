@@ -60,6 +60,7 @@ const Map<String, dynamic> translationsFr = {
     'studentAccountCreated': 'Votre compte étudiant a été créé avec succès.',
     'accountDetails': 'Détails du compte :',
     'goToLogin': 'Aller à la connexion',
+    'selectAtLeastOneGrade': 'Sélectionnez au moins un niveau',
   },
   'nav': {'home': 'Accueil', 'classes': 'Cours', 'assignments': 'Devoirs', 'timetable': 'Emploi du temps', 'sessions': 'Sessions en direct', 'profile': 'Profil', 'students': 'Étudiants', 'analytics': 'Analytique', 'notifications': 'Notifications'},
   'dashboard': {'welcomeBack': 'Bon retour', 'overview': "Voici ce qui se passe aujourd'hui", 'teachingOverview': "Voici votre aperçu de l'enseignement"},

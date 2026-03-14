@@ -10,7 +10,7 @@ import 'package:high_school/domain/entities/lesson_entity.dart';
 import 'package:high_school/domain/entities/live_session_entity.dart';
 import 'package:high_school/domain/entities/student_entity.dart';
 import 'package:high_school/domain/repositories/assignments_repository.dart';
-import 'package:high_school/domain/repositories/classes_repository.dart';
+import 'package:high_school/domain/repositories/teacher_classes_repository.dart';
 import 'package:high_school/domain/repositories/lessons_repository.dart';
 import 'package:high_school/domain/repositories/live_sessions_repository.dart';
 import 'package:high_school/domain/repositories/students_repository.dart';
@@ -31,14 +31,14 @@ class _TeacherClassDetailsScreenState extends State<TeacherClassDetailsScreen> {
   List<AssignmentEntity> _localAssignments = [];
 
   Future<Map<String, dynamic>> _loadData() async {
-    final classesRepo = context.read<ClassesRepository>();
+    final teacherClassesRepo = context.read<TeacherClassesRepository>();
     final lessonsRepo = context.read<LessonsRepository>();
     final assignmentsRepo = context.read<AssignmentsRepository>();
     final studentsRepo = context.read<StudentsRepository>();
     final liveRepo = context.read<LiveSessionsRepository>();
 
     final results = await Future.wait([
-      classesRepo.getClassById(widget.classId),
+      teacherClassesRepo.getClassById(widget.classId),
       lessonsRepo.getLessons(classId: widget.classId),
       assignmentsRepo.getAssignments(classId: widget.classId),
       studentsRepo.getStudents(classId: widget.classId),
