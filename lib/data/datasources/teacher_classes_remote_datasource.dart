@@ -98,18 +98,28 @@ class TeacherClassesRemoteDatasource {
     if (id == null || id.isEmpty) return null;
     final subject = m['subject']?.toString() ?? '';
     final gradeLevel = m['gradeLevel']?.toString() ?? '';
-    final name = '${subject.isNotEmpty ? subject : 'Class'}${gradeLevel.isNotEmpty ? ' - $gradeLevel' : ''}';
+    final className = m['className']?.toString();
+    final name = (className != null && className.isNotEmpty)
+        ? className
+        : '${subject.isNotEmpty ? subject : 'Class'}${gradeLevel.isNotEmpty ? ' - $gradeLevel' : ''}';
     int students = 0;
-    if (m['students'] != null) {
-      if (m['students'] is int) {
-        students = m['students'] as int;
-      } else if (m['students'] is List) {
+    if (m['totalStudents'] != null) {
+      if (m['totalStudents'] is int) {
+        students = m['totalStudents'] as int;
+      } else {
+        students = int.tryParse(m['totalStudents'].toString()) ?? 0;
+      }
+    }
+    if (students == 0 && m['students'] != null) {
+      if (m['students'] is List) {
         students = (m['students'] as List).length;
+      } else if (m['students'] is int) {
+        students = m['students'] as int;
       } else {
         students = int.tryParse(m['students'].toString()) ?? 0;
       }
     }
-    final schedule = m['schedule']?.toString() ?? '';
+    final schedule = _scheduleToString(m['schedule']);
     String teacher = '';
     String teacherId = '';
     final t = m['teacher'];
@@ -133,5 +143,33 @@ class TeacherClassesRemoteDatasource {
       level: gradeLevel,
       schoolYear: m['schoolYear']?.toString() ?? '',
     );
+  }
+
+  /// Format schedule from API (array of {day, startMin, endMin}) to readable string.
+  static String _scheduleToString(dynamic schedule) {
+    if (schedule == null) return '';
+    if (schedule is String) return schedule;
+    if (schedule is! List || schedule.isEmpty) return '';
+    const dayNames = {'sun': 'Sun', 'mon': 'Mon', 'tue': 'Tue', 'wed': 'Wed', 'thu': 'Thu', 'fri': 'Fri', 'sat': 'Sat'};
+    final parts = <String>[];
+    for (final e in schedule) {
+      final map = e is Map<String, dynamic> ? e : Map<String, dynamic>.from(e as Map);
+      final day = (map['day']?.toString() ?? '').toLowerCase();
+      final startMin = map['startMin'] is int ? map['startMin'] as int : int.tryParse(map['startMin']?.toString() ?? '') ?? 0;
+      final endMin = map['endMin'] is int ? map['endMin'] as int : int.tryParse(map['endMin']?.toString() ?? '') ?? 0;
+      final startTime = _minToTimeStr(startMin);
+      final endTime = _minToTimeStr(endMin);
+      final dayLabel = dayNames[day] ?? day;
+      parts.add('$dayLabel $startTime - $endTime');
+    }
+    return parts.join(', ');
+  }
+
+  static String _minToTimeStr(int minFromMidnight) {
+    final h = minFromMidnight ~/ 60;
+    final m = minFromMidnight % 60;
+    final hour = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+    final ampm = h >= 12 ? 'PM' : 'AM';
+    return '$hour:${m.toString().padLeft(2, '0')} $ampm';
   }
 }

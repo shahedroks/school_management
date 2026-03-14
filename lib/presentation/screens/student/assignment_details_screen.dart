@@ -1,11 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:high_school/core/theme/app_theme.dart';
+import 'package:high_school/domain/entities/assignment_detail_result.dart';
 import 'package:high_school/domain/entities/assignment_entity.dart';
 import 'package:high_school/domain/entities/class_entity.dart';
 import 'package:high_school/domain/repositories/assignments_repository.dart';
 import 'package:high_school/domain/repositories/classes_repository.dart';
+import 'package:high_school/domain/repositories/student_assignment_details_repository.dart';
 import 'package:high_school/presentation/providers/language_provider.dart';
+
+class _AssignmentScreenData {
+  const _AssignmentScreenData({
+    required this.assignment,
+    required this.classData,
+    required this.apiResult,
+  });
+  final AssignmentEntity? assignment;
+  final ClassEntity? classData;
+  final AssignmentDetailResult? apiResult;
+}
+
+class _ApiSubmission {
+  const _ApiSubmission({
+    required this.hasSubmission,
+    this.submittedAt,
+    this.submissionFileUrl,
+    this.submissionFileName,
+  });
+  final bool hasSubmission;
+  final String? submittedAt;
+  final String? submissionFileUrl;
+  final String? submissionFileName;
+}
 
 class AssignmentDetailsScreen extends StatefulWidget {
   const AssignmentDetailsScreen({
@@ -56,41 +82,89 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
+    final apiRepo = context.read<StudentAssignmentDetailsRepository>();
+    final assignmentsRepo = context.read<AssignmentsRepository>();
+    final classesRepo = context.read<ClassesRepository>();
 
-    if (widget.passedAssignment != null) {
-      final a = widget.passedAssignment!;
-      return FutureBuilder<List<ClassEntity>>(
-        future: context.read<ClassesRepository>().getClasses(),
-        builder: (context, snapshot) {
-          ClassEntity? classData;
-          if (snapshot.hasData) {
-            try {
-              classData = snapshot.data!.firstWhere((c) => c.id == a.classId);
-            } catch (_) {}
-          }
-          return _buildContent(context, lang: lang, a: a, classData: classData);
-        },
+    final future = _loadAssignmentDetail(
+      assignmentId: widget.assignmentId,
+      passedAssignment: widget.passedAssignment,
+      apiRepo: apiRepo,
+      assignmentsRepo: assignmentsRepo,
+      classesRepo: classesRepo,
+    );
+
+    return FutureBuilder<_AssignmentScreenData>(
+      future: future,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final data = snapshot.data!;
+        if (data.assignment == null) {
+          return Center(child: Text(lang.t('classes.classNotFound')));
+        }
+        return _buildContent(
+          context,
+          lang: lang,
+          a: data.assignment!,
+          classData: data.classData,
+          apiSubmission: data.apiResult != null
+              ? _ApiSubmission(
+                  hasSubmission: data.apiResult!.hasSubmission,
+                  submittedAt: data.apiResult!.submittedAt,
+                  submissionFileUrl: data.apiResult!.submissionFileUrl,
+                  submissionFileName: data.apiResult!.submissionFileName,
+                )
+              : null,
+        );
+      },
+    );
+  }
+
+  static Future<_AssignmentScreenData> _loadAssignmentDetail({
+    required String assignmentId,
+    required AssignmentEntity? passedAssignment,
+    required StudentAssignmentDetailsRepository apiRepo,
+    required AssignmentsRepository assignmentsRepo,
+    required ClassesRepository classesRepo,
+  }) async {
+    final apiResult = await apiRepo.getAssignmentDetail(assignmentId);
+    if (apiResult != null) {
+      return _AssignmentScreenData(
+        assignment: apiResult.assignment,
+        classData: apiResult.classInfo,
+        apiResult: apiResult,
       );
     }
-
-    return FutureBuilder(
-      future: Future.wait([
-        context.read<AssignmentsRepository>().getAssignmentById(widget.assignmentId),
-        context.read<ClassesRepository>().getClasses(),
-      ]),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-        final a = snapshot.data![0] as AssignmentEntity?;
-        final classes = snapshot.data![1] as List<ClassEntity>;
-        if (a == null) return Center(child: Text(lang.t('classes.classNotFound')));
-
-        ClassEntity? classData;
-        try {
-          classData = classes.firstWhere((c) => c.id == a.classId);
-        } catch (_) {}
-
-        return _buildContent(context, lang: lang, a: a, classData: classData);
-      },
+    if (passedAssignment != null) {
+      final classes = await classesRepo.getClasses();
+      ClassEntity? classData;
+      try {
+        classData = classes.firstWhere((c) => c.id == passedAssignment.classId);
+      } catch (_) {}
+      return _AssignmentScreenData(
+        assignment: passedAssignment,
+        classData: classData,
+        apiResult: null,
+      );
+    }
+    final results = await Future.wait([
+      assignmentsRepo.getAssignmentById(assignmentId),
+      classesRepo.getClasses(),
+    ]);
+    final a = results[0] as AssignmentEntity?;
+    final classes = results[1] as List<ClassEntity>;
+    ClassEntity? classData;
+    if (a != null) {
+      try {
+        classData = classes.firstWhere((c) => c.id == a.classId);
+      } catch (_) {}
+    }
+    return _AssignmentScreenData(
+      assignment: a,
+      classData: classData,
+      apiResult: null,
     );
   }
 
@@ -99,11 +173,13 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
     required LanguageProvider lang,
     required AssignmentEntity a,
     ClassEntity? classData,
+    _ApiSubmission? apiSubmission,
   }) {
     final daysUntilDue = _daysUntilDue(a.dueDate);
     final isOverdue = daysUntilDue < 0;
     final isUrgent = daysUntilDue <= 2 && daysUntilDue >= 0;
-    final currentStatus = _submitted ? AssignmentStatus.submitted : a.status;
+    final isSubmitted = apiSubmission?.hasSubmission ?? _submitted;
+    final currentStatus = isSubmitted ? AssignmentStatus.submitted : a.status;
     final isPending = currentStatus == AssignmentStatus.pending;
 
     return SingleChildScrollView(
@@ -114,20 +190,20 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
               const SizedBox(height: 8),
               if (isOverdue && isPending) _buildAlert(context, lang, isOverdue: true, assignment: a),
               if (isUrgent && isPending) _buildDueSoonAlert(context, lang, daysUntilDue),
-              if (_submitted && a.status != AssignmentStatus.graded) _buildSubmittedAlert(context, lang),
+              if (isSubmitted && a.status != AssignmentStatus.graded) _buildSubmittedAlert(context, lang),
               const SizedBox(height: 12),
               _buildDetailsCard(context, lang, a, classData, currentStatus, isOverdue),
               if (a.status == AssignmentStatus.graded && a.grade != null) ...[
                 const SizedBox(height: 16),
                 _buildGradeCard(context, lang, a),
               ],
-              if (!_submitted && isPending) ...[
+              if (!isSubmitted && isPending) ...[
                 const SizedBox(height: 16),
                 _buildSubmissionCard(context, lang),
               ],
-              if (_submitted && a.status != AssignmentStatus.graded) ...[
+              if (isSubmitted && a.status != AssignmentStatus.graded) ...[
                 const SizedBox(height: 16),
-                _buildYourSubmissionCard(context, lang),
+                _buildYourSubmissionCard(context, lang, apiSubmission: apiSubmission),
               ],
               const SizedBox(height: 24),
             ],
@@ -527,10 +603,33 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
     );
   }
 
-  Widget _buildYourSubmissionCard(BuildContext context, LanguageProvider lang) {
-    final now = DateTime.now();
-    final dateStr = '${now.month}/${now.day}/${now.year}';
-    final timeStr = '${now.hour}:${now.minute.toString().padLeft(2, '0')}';
+  Widget _buildYourSubmissionCard(BuildContext context, LanguageProvider lang, {_ApiSubmission? apiSubmission}) {
+    String dateStr;
+    String timeStr;
+    String responseDisplay;
+    if (apiSubmission != null && apiSubmission.submittedAt != null) {
+      try {
+        final dt = DateTime.parse(apiSubmission.submittedAt!);
+        dateStr = '${dt.month}/${dt.day}/${dt.year}';
+        timeStr = '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+      } catch (_) {
+        dateStr = apiSubmission.submittedAt!;
+        timeStr = '';
+      }
+      if (apiSubmission.submissionFileName != null && apiSubmission.submissionFileName!.isNotEmpty) {
+        responseDisplay = apiSubmission.submissionFileName!;
+        if (apiSubmission.submissionFileUrl != null && apiSubmission.submissionFileUrl!.isNotEmpty) {
+          responseDisplay += ' (${lang.t('assignments.uploadFile')})';
+        }
+      } else {
+        responseDisplay = 'File submission';
+      }
+    } else {
+      final now = DateTime.now();
+      dateStr = '${now.month}/${now.day}/${now.year}';
+      timeStr = '${now.hour}:${now.minute.toString().padLeft(2, '0')}';
+      responseDisplay = _submissionText.isEmpty ? 'File submission only' : _submissionText;
+    }
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.2))),
@@ -544,7 +643,10 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-              child: Text('${lang.t('assignments.submittedOn')} $dateStr at $timeStr', style: TextStyle(fontSize: 12, color: Colors.blue.shade900)),
+              child: Text(
+                timeStr.isEmpty ? '${lang.t('assignments.submittedOn')} $dateStr' : '${lang.t('assignments.submittedOn')} $dateStr at $timeStr',
+                style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
+              ),
             ),
             const SizedBox(height: 12),
             Text('Your Response:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
@@ -553,7 +655,7 @@ class _AssignmentDetailsScreenState extends State<AssignmentDetailsScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(8)),
-              child: Text(_submissionText.isEmpty ? 'File submission only' : _submissionText, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
+              child: Text(responseDisplay, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
             ),
           ],
         ),

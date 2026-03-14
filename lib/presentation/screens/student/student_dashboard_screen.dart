@@ -706,7 +706,7 @@ class _UpcomingAssignmentTileFromApi extends StatelessWidget {
     final daysText =
         daysLeft >= 0 ? '${daysLeft}d left' : '${-daysLeft}d overdue';
     return InkWell(
-      onTap: () => context.go(
+      onTap: () => context.push(
           '/student/assignments/${assignment.id}',
           extra: _assignmentFromDashboardApi(assignment)),
       borderRadius: BorderRadius.circular(10),
@@ -791,7 +791,7 @@ class _AssignmentCard extends StatelessWidget {
     final daysText = daysLeft >= 0 ? '${daysLeft}d left' : '${-daysLeft}d left';
 
     return InkWell(
-      onTap: () => context.go('/student/assignments/${assignment.id}'),
+      onTap: () => context.push('/student/assignments/${assignment.id}', extra: assignment),
       borderRadius: BorderRadius.circular(10),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),

@@ -96,7 +96,7 @@ class ClassesListScreen extends StatelessWidget {
     );
   }
 
-  /// Load classes from GET /students/student/classes only (no subscription fallback).
+  /// Load classes from GET /classes/student/my (Student API).
   static Future<List<ClassEntity>> _loadClasses({
     required StudentClassesRepository studentClassesRepo,
   }) async {

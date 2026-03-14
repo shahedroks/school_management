@@ -15,19 +15,20 @@ class LiveSessionsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
 
+    final liveRepo = context.read<LiveSessionsRepository>();
     return FutureBuilder(
       future: Future.wait([
-        context.read<LiveSessionsRepository>().getLiveSessions(),
+        liveRepo.getStudentLiveSessions(status: 'ongoing'),
+        liveRepo.getStudentLiveSessions(status: 'approved'),
         context.read<ClassesRepository>().getClasses(),
       ]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final sessions = (snapshot.data![0] as List).cast<LiveSessionEntity>();
-        final classes = (snapshot.data![1] as List).cast<ClassEntity>();
-        final activeSessions = sessions.where((s) => s.isActive).toList();
-        final upcomingSessions = sessions.where((s) => !s.isActive).toList();
+        final activeSessions = (snapshot.data![0] as List).cast<LiveSessionEntity>();
+        final upcomingSessions = (snapshot.data![1] as List).cast<LiveSessionEntity>();
+        final classes = (snapshot.data![2] as List).cast<ClassEntity>();
 
         ClassEntity? classFor(LiveSessionEntity s) {
           try {
@@ -122,7 +123,7 @@ class LiveSessionsScreen extends StatelessWidget {
             else
               ...upcomingSessions.map((s) => _UpcomingSessionCard(
                     session: s,
-                    className: classFor(s)?.name ?? 'Class',
+                    className: s.className ?? classFor(s)?.name ?? 'Class',
                     lang: lang,
                   )),
             if (activeSessions.isEmpty && upcomingSessions.isEmpty) ...[

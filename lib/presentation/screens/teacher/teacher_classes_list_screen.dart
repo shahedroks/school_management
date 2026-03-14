@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -65,22 +67,25 @@ class _TeacherClassesListScreenState extends State<TeacherClassesListScreen> {
   Widget _buildHeader(BuildContext context, LanguageProvider lang, int count) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
       decoration: BoxDecoration(
         color: const Color(0xFF1E3A8A),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   lang.t('classes.myClasses'),
@@ -88,33 +93,39 @@ class _TeacherClassesListScreenState extends State<TeacherClassesListScreen> {
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0,
+                    letterSpacing: 0.2,
+                    height: 1.25,
                     decoration: TextDecoration.none,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   count == 1
                       ? '1 ${lang.t('classes.assignedToYou')}'
                       : '$count ${lang.t('classes.assignedToYouPlural')}',
                   style: const TextStyle(
-                    color: Color(0xFFBFDBFE),
+                    color: Colors.white,
                     fontSize: 14,
-                    fontWeight: FontWeight.normal,
+                    fontWeight: FontWeight.w400,
                     letterSpacing: 0,
+                    height: 1.3,
                     decoration: TextDecoration.none,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
           IconButton(
             onPressed: () => setState(() => _showFilters = !_showFilters),
-            icon: Icon(_showFilters ? Icons.tune : Icons.tune_outlined,
-                color: Colors.white, size: 24),
+            icon: const Icon(Icons.filter_list, color: Colors.white, size: 24),
             style: IconButton.styleFrom(
               foregroundColor: Colors.white,
               backgroundColor: Colors.transparent,
+              padding: const EdgeInsets.all(8),
             ),
           ),
         ],
@@ -191,12 +202,17 @@ class _TeacherClassesListScreenState extends State<TeacherClassesListScreen> {
             ? lang.t('classes.showingClass')
             : lang.t('classes.showingClasses').replaceAll('{count}', '$count');
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(text,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: Colors.grey.shade600)),
+      padding: const EdgeInsets.only(left: 4, top: 16),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          height: 1.35,
+          color: Color(0xFF6B7280),
+          decoration: TextDecoration.none,
+        ),
+      ),
     );
   }
 
@@ -233,6 +249,56 @@ class _TeacherClassesListScreenState extends State<TeacherClassesListScreen> {
     );
   }
 
+  static const Color _cardTitleBlue = Color(0xFF21427D);
+  static const Color _gradePillBg = Color(0xFF2E7D32);
+  static const Color _gradePillText = Colors.white;
+
+  /// Format schedule for display. Converts API raw format e.g. [{day: sat, startMin: 540, endMin: 600}] to "Sat 9:00 AM - 10:00 AM".
+  static String _formatSchedule(String? raw) {
+    if (raw == null || raw.trim().isEmpty) return '—';
+    final s = raw.trim();
+    if (!s.startsWith('[') || (!s.contains('startMin') && !s.contains('startTime'))) return s;
+    const dayNames = {'sun': 'Sun', 'mon': 'Mon', 'tue': 'Tue', 'wed': 'Wed', 'thu': 'Thu', 'fri': 'Fri', 'sat': 'Sat'};
+    try {
+      final list = jsonDecode(s) as List<dynamic>?;
+      if (list != null && list.isNotEmpty) {
+        final parts = <String>[];
+        for (final e in list) {
+          final map = e is Map<String, dynamic> ? e : Map<String, dynamic>.from(e as Map);
+          final day = (map['day']?.toString() ?? '').toLowerCase();
+          final startMin = map['startMin'] is int ? map['startMin'] as int : int.tryParse(map['startMin']?.toString() ?? '') ?? 0;
+          final endMin = map['endMin'] is int ? map['endMin'] as int : int.tryParse(map['endMin']?.toString() ?? '') ?? 0;
+          final startTime = _minToTimeStr(startMin);
+          final endTime = _minToTimeStr(endMin);
+          final dayLabel = dayNames[day] ?? day;
+          parts.add('$dayLabel $startTime - $endTime');
+        }
+        return parts.join(', ');
+      }
+    } catch (_) {}
+    final regex = RegExp(r'day:\s*(\w+)[\s\S]*?startMin:\s*(\d+)[\s\S]*?endMin:\s*(\d+)');
+    final matches = regex.allMatches(s);
+    if (matches.isNotEmpty) {
+      final parts = matches.map((m) {
+        final day = m.group(1)!.toLowerCase();
+        final startMin = int.tryParse(m.group(2) ?? '') ?? 0;
+        final endMin = int.tryParse(m.group(3) ?? '') ?? 0;
+        final dayLabel = dayNames[day] ?? day;
+        return '$dayLabel ${_minToTimeStr(startMin)} - ${_minToTimeStr(endMin)}';
+      }).toList();
+      return parts.join(', ');
+    }
+    return s;
+  }
+
+  static String _minToTimeStr(int minFromMidnight) {
+    final h = minFromMidnight ~/ 60;
+    final m = minFromMidnight % 60;
+    final hour = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+    final ampm = h >= 12 ? 'PM' : 'AM';
+    return '$hour:${m.toString().padLeft(2, '0')} $ampm';
+  }
+
   Widget _buildClassesList(
       BuildContext context, LanguageProvider lang, List<ClassEntity> classes) {
     return Column(
@@ -243,14 +309,12 @@ class _TeacherClassesListScreenState extends State<TeacherClassesListScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => context.go('/teacher/classes/${c.id}'),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     child: Card(
-                      elevation: 1,
+                      elevation: 2,
+                      shadowColor: Colors.black26,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(
-                            color: AppTheme.primary.withValues(alpha: 0.2),
-                            width: 2),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -258,68 +322,80 @@ class _TeacherClassesListScreenState extends State<TeacherClassesListScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
-                                  child: Text(c.subject,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                              fontWeight: FontWeight.bold)),
+                                  child: Text(
+                                    c.subject,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: _cardTitleBlue,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color:
-                                        AppTheme.accent.withValues(alpha: 0.15),
+                                    color: _gradePillBg,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: Text(c.level,
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                          color: AppTheme.accent)),
+                                  child: Text(
+                                    c.level.endsWith('Grade')
+                                        ? c.level
+                                        : '${c.level} Grade',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: _gradePillText,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 12),
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Icon(Icons.calendar_today,
-                                    size: 18, color: Colors.grey.shade600),
+                                Icon(
+                                  Icons.date_range,
+                                  size: 18,
+                                  color: Colors.grey.shade600,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                    child: Text(c.schedule,
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey.shade600))),
+                                  child: Text(
+                                    _formatSchedule(c.schedule),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 8),
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Icon(Icons.people_outline,
-                                    size: 18, color: Colors.grey.shade600),
+                                Icon(
+                                  Icons.people_outlined,
+                                  size: 18,
+                                  color: Colors.grey.shade600,
+                                ),
                                 const SizedBox(width: 8),
-                                Text.rich(
-                                  TextSpan(
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600),
-                                    children: [
-                                      TextSpan(
-                                          text: '${c.students} ',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              color: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.color)),
-                                      TextSpan(
-                                          text: lang
-                                              .t('classes.studentsEnrolled')),
-                                    ],
+                                Text(
+                                  '${c.students} ${lang.t('classes.students')}',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                    decoration: TextDecoration.none,
                                   ),
                                 ),
                               ],

@@ -5,7 +5,7 @@ import 'package:high_school/domain/entities/student_class_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// GET /students/student/classes or GET /classes/student/my (Auth)
+/// GET /classes/student/my (Student) — student's enrolled classes
 class StudentClassesRemoteDatasource {
   StudentClassesRemoteDatasource(this._prefs) : _baseUrl = AppConstants.apiBaseUrl;
 
@@ -17,12 +17,12 @@ class StudentClassesRemoteDatasource {
 
   bool get isConfigured => _baseUrl.isNotEmpty;
 
-  /// GET /students/student/classes — data: array of student class items
+  /// GET /classes/student/my (Student) — data: array of { classId, subject, gradeLevel, teacher: { id, name }, studentsCount, maxStudents, status }
   Future<List<StudentClassItem>> getStudentClasses() async {
     if (!isConfigured) return [];
     final token = _prefs.getString(AppConstants.sessionTokenKey);
     if (token == null || token.isEmpty) return [];
-    final uri = Uri.parse('$_apiBase/students/student/classes');
+    final uri = Uri.parse('$_apiBase/classes/student/my');
     final response = await http.get(
       uri,
       headers: {

@@ -316,7 +316,7 @@ class _AssignmentsTab extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
             child: InkWell(
-              onTap: () => context.go('/student/assignments/${a.id}'),
+              onTap: () => context.push('/student/assignments/${a.id}'),
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 padding: const EdgeInsets.all(12),

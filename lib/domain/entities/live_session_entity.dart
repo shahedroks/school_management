@@ -9,6 +9,8 @@ class LiveSessionEntity {
   final LiveSessionPlatform platform;
   final String link;
   final bool isActive;
+  /// From API: e.g. "5th Grade - English A". Used for upcoming card when set.
+  final String? className;
 
   const LiveSessionEntity({
     required this.id,
@@ -19,5 +21,6 @@ class LiveSessionEntity {
     required this.platform,
     required this.link,
     required this.isActive,
+    this.className,
   });
 }
